@@ -1,0 +1,12 @@
+---
+title: "Org Moding My Life"
+date: 2022-01-03T19:50:15-08:00
+draft: false
+---
+
+* Goal of this page
+I really enjoy using [[https://orgmode.org/][org mode]]. [[https://cs.illinois.edu/about/people/department-faculty/mattox][Professor Mattox A. Beckman]] from UIUC got me into
+using ~org~. Since then, I have been using ~org~ for driving just about
+everything in my personal and professional life. Even the content of this site
+is written using ~org mode~. The goal of this page is to share some of the
+things I enjoy in ~org~ that others may enjoy.

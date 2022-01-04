@@ -1,0 +1,45 @@
+baseURL = 'https://binary-eater.github.io/'
+languageCode = 'en-us'
+title = 'Binary-Eater: A developer focused on low-level programming'
+theme = 'hugo-theme-ghci'
+
+[Params]
+# Note: This is for the meta description, which is different from the
+# "description" displayed in the prompt.
+description = "Binary-Eater's Portfolio!"
+  [Params.Package] 
+  # Note: controls properties related to the Haskell "module" that contains
+  # functions with information about the site and profile
+  importQualified = true # whether module should be a qualified import
+
+  [Params.Profile]
+  # Note: in output
+  # ghci> [sysInfoFcnName]
+  # Login name: [userName]
+  # Host name: [pcName]
+  # ghci> [profileDescriptionFcnName]
+  # [description]
+  #
+  userName = "binary-eater"
+  pcName = "github"
+
+  # Note: If you want to use a Markdown or Org file, you can use the following
+  # description = "/description.md"
+  # Note: and put the description.md in /content/description.md
+  description = "/description.org"
+
+    [Params.Profile.Picture]
+    githubUserName = "Binary-Eater"
+
+  [Params.Tree]
+  fcnName = "getInterestsAndProjects"
+  # Note: ["ACTIVITY", "URL or PATH TO YOUR CONTENT FILE"]
+  files = [ 
+    ["Nix", "/posts/nix.org"],
+    ["Org Moding My Life", "/posts/org-mode.org"],
+    ["Spacemacs", "/posts/spacemacs.org"],
+    ["Haskell From Zero", "/posts/haskell.org"],
+    ["Personal Setup", "/posts/personal-setup.org"],
+    ["GitHub Profile", "https://github.com/Binary-Eater"],
+    ["Site Tweaks", "/posts/site-tweaks.org"],
+  ]

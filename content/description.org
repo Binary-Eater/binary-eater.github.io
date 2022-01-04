@@ -1,0 +1,5 @@
+I am a programmer primarily focused on delving into kernel-space programming.
+
+My secondary interests are programming languages and related concepts.
+
+I enjoy doing work that generates truly "free" software.

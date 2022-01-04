@@ -1,0 +1,13 @@
+---
+title: "Nix"
+date: 2022-01-03T19:38:42-08:00
+draft: false
+---
+
+* Goal of this page
+I think the way [[https://nixos.org/guides/how-nix-works.html][Nix]] approaches package management is brilliant. [[https://nixos.org/guides/nix-pills/developing-with-nix-shell.html][nix-shell]] is an
+amazing tool for handling dependency specification of a project in a way that
+supports diverging from the system libraries and components. I learned about
+~NixOS~ from [[https://cs.illinois.edu/about/people/department-faculty/mattox][Professor Mattox A. Beckman]].
+
+I plan to write content about the things I like in ~nix~ and ~NixOS~.

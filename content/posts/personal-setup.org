@@ -1,0 +1,54 @@
+---
+title: "Personal Setup"
+date: 2022-01-03T19:22:44-08:00
+draft: false
+---
+
+* Goal of this page
+This page will contain information on my setup I use for open-source and
+personal development. This includes both the software and physical sides.
+Normally, I do not think setups are worth discussing. However, I do think there
+is something to be gained in this specific case since I currently do not use
+normal or "out of the box" gear + software stack. Listed below are some of the
+highlights in my setup that will be expanded on in the near future.
+
++ NixOS
+  - btrfs
+    * LVM on LUKS
+    * Encrypted ~/boot~
++ XMonad
++ Spacemacs
++ 34" 21:9 3440x1440@60Hz LG FreeSync monitor
++ ErgoDox w/ Halo Trues
++ CODE modified w/ Aqua Zilents 67g and SA Oblivion
+  - Matching custom aviator cable from [[https://mechcables.com/][MechCables]]
+    * I think large or JUMBO coils are the way to go personally
++ xDuoo TA-10R tube headphone DAC/Amp
++ Drop + HIFIMAN HE5XX planar magnetic headphones
+  - Not an audiophile. Mostly for comfort (but it sounds great honestly).
+    * Cheap earbuds were hurting after a while, and normally headphones apply
+      too much pressure on my head
++ I do think my physical desktop build is clean (nothing fancy or
+  consumer-oriented but a nice development machine), but I do not think there is
+  anything special about it to learn from
+* Plans for this page
+** The ideal case (long-term)
+My ideal setup, for illustrating the benefits and downfalls of each component in
+my work area, would be to use [[https://unity.com/][Unity]] to create a virtual recreation (not exact. I
+am not artsy in any way, shape, or form aside from maybe ascii art) of my work
+environment that I would then export as [[https://docs.unity3d.com/Manual/webgl-interactingwithbrowserscripting.html][WebGL that can be interacted with on the
+site]]. This would enable users with the ability to interact with the 3D rendering
+in a way that then correlates with information about the component displayed on
+the site. This experience would be quite immersive and, truthfully, fun to play
+with.
+
+However, doing this would require a lot of time and energy that I can put into
+learning and contributing to kernel-space development. I also have a day job
+that eats up quite a bit of time. I tend to like making contributions that
+benefit more than just myself if possible (of course, I like to personally
+benefit from such a contribution as well).
+** The middle-ground
+Add some nice SVGs of each component to show them off (not sure how hard this
+would get).
+** The quick and not-so-elegant (short-term)
+Just list the setup components with their pros and cons in bullet form.

@@ -1,0 +1,16 @@
+---
+title: "Haskell From Zero"
+date: 2022-01-03T19:51:18-08:00
+draft: false
+---
+
+* Plans for this page
+I have started to self-teach myself Haskell. The experience has been
+interesting. A lot of effort to really delve deep into the fpl and type theory
+concepts. I took two programming language courses in my undergrad. One course
+was taught in OCaml, while the other involved the [[https://kframework.org/][K framework]]. However, I still
+found my learning journey to be a non-trivial but fun one. I unfortunately did
+not get the opportunity to take the course under [[https://cs.illinois.edu/about/people/department-faculty/mattox][Professor Mattox A. Beckman]] in
+Haskell. The equivalent course taught in OCaml by [[https://cs.illinois.edu/about/people/faculty/madhu][Professor Madhusudan
+Parthasarathy]] was terrific. Just have to self-learn Haskell now 🙂. Anyways, the
+goal here is write about my starting from zero experiences.

@@ -1,0 +1,3 @@
+[submodule "themes/hugo-theme-ghci"]
+	path = themes/hugo-theme-ghci
+	url = git://github.com/Binary-Eater/hugo-theme-ghci.git

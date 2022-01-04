@@ -1,0 +1,38 @@
+---
+title: "Site Tweaks"
+date: 2022-01-03T19:56:16-08:00
+draft: false
+---
+
+Currently, the site uses [[https://github.com/Binary-Eater][hugo-theme-ghci]] for its functionality and style
+choices. This page is used to present shortcomings that seem to arise from the
+design and potentially solutions for addressing them.
+
+* Enhancement ideas
+
++ Currently, inter-page navigation is non-existent
+  - This is especially problematic considering that the homepage does not load
+    immediately but animates
+  - Traditional navigation mechanisms found in typical websites feel clunky to me
+    * Would want to implement a context switcher similar to [[https://docs.github.com/en/get-started/using-github/github-command-palette][GitHub's]] or [[https://slack.engineering/a-faster-smarter-quick-switcher/][Slack's]]
+      implementation
+      + Implementing this in vanilla web programming for a ~hugo~ theme seems
+        difficult
+      + Probably better, if wanting to implement this, to venture into [[https://github.com/ajnsit/concur][Concur]]
+        and [[https://github.com/ghcjs/ghcjs][GHCJS]]
++ "Skip animation" button for landing page
+  - As cool as it is for me to see for the first time or after a break, the
+    animations are exhausting when using the site with back to back reloads
++ Fancy 404 page
+
+* Disclaimer
+I am not a web developer nor do web applications fascinate me in any way, shape,
+or form. I live in a world of text and solely use a keyboard with no mouse.
+Given that, I assume my priorities for improving this site beyond fixing
+breaking issues will be low.
+
+If some of these enhancement ideas interest you/you would like to use
+~hugo-theme-ghci~ for your own site, feel free to contribute 🙂.
+
+Navigating this site is significantly more comfortable when using something like
+[[https://github.com/tridactyl/tridactyl][Tridactyl]], [[https://qutebrowser.org/][qutebrowser]], or [[https://nyxt.atlas.engineer/][nyxt]].

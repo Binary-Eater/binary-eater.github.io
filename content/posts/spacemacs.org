@@ -1,0 +1,11 @@
+---
+title: "Spacemacs"
+date: 2022-01-03T19:50:57-08:00
+draft: false
+---
+
+* Plans for this page
+Spacemacs is my editor all the time. I use it for text editing but also use it
+for tasks beyond programming. Like a number of other things on this site, I was
+introduced to [[https://develop.spacemacs.org/][spacemacs]] by [[https://cs.illinois.edu/about/people/department-faculty/mattox][Professor Mattox A. Beckman]]. My plan is to write
+about the features I use and delve into my ~.spacemacs~ a bit.
