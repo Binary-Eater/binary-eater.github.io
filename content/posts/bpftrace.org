@@ -1,0 +1,170 @@
+---
+title: "bpftrace"
+date: 2023-12-10T21:32:59-08:00
+draft: false
+---
+
+* What is bpftrace?
+
+~bpftrace~ is both a CLI tool and a tracing language that compiles down to Linux
+enhanced Berkeley Packet Filter (eBPF) instructions. The BPF VM subsystem in the
+Linux kernel is immensely powerful. Covering it would require a separate
+article. For now, think of eBPF as some kind of mechanism that magically enables
+sandboxed loading of injected logic into priveleged contexts from userspace.
+~bpftrace~ makes use of eBPF to inject dynamic tracing instruments. The
+~bpftrace~ language can work with tranditional static tracing probes as well.
+
+* Different types of probes available
+
+The different types of probes are demonstrated in the bpftrace [[https://github.com/iovisor/bpftrace/blob/master/docs/reference_guide.md#probes][reference guide]]
+in the source tree. As I continue to learn more about ~bpftrace~ and think more
+details should be expanded about each probe type, I will add that information to
+this post. For now, I will cover what kernel build configuration options are
+required for supporting these probes.
+
+** kprobe / kretprobe
+
+Minimal configuration required.
+
+#+BEGIN_SRC
+  CONFIG_BPF_EVENTS=y
+  CONFIG_KPROBES=y
+#+END_SRC
+
+Additional helpful configuration options.
+
+#+BEGIN_SRC
+  CONFIG_BPF_KPROBE_OVERRIDE=y # Enables overriding functions that would be executed after kprobe point
+  CONFIG_KPROBES_ON_FTRACE=y   # Optimizes kprobes with ftrace tracers already generated
+  CONFIG_KPROBE_EVENTS=y       # Support dynamically inserting tracing events using kprobes
+#+END_SRC
+
+** kfunc / kretfunc
+
+Minimal configuration required.
+
+#+BEGIN_SRC
+  CONFIG_DEBUG_INFO_BTF=y
+#+END_SRC
+
+Additional helpful configuration options.
+
+#+BEGIN_SRC
+  CONFIG_MODULE_ALLOW_BTF_MISMATCH=y # Allows modules with mismatching BTF information against running kernel to be loaded
+#+END_SRC
+
+** uprobe / uretprobe
+
+#+BEGIN_SRC
+  CONFIG_UPROBE=y
+#+END_SRC
+
+Additional helpful configuration options.
+
+#+BEGIN_SRC
+  CONFIG_UPROBE_EVENTS=y # Support dynamically setting uprobes/uretprobes using memory offsets of userspace programs
+                         # Link: https://docs.kernel.org/trace/uprobetracer.html
+#+END_SRC
+
+** tracepoint
+
+Minimal configuration required.
+
+#+BEGIN_SRC
+  CONFIG_TRACEPOINTS=y
+#+END_SRC
+
+Additional helpful configuration options.
+
+#+BEGIN_SRC
+  CONFIG_TRACEPOINT_BENCHMARK=y # For benchmarking the tracepoint feature in the kernel using a kernel tracepoint
+#+END_SRC
+
+Here is [[https://docs.kernel.org/trace/tracepoints.html][documentation for how to implement tracepoints in kernel code]]. Even
+without ~bpftrace~, there are mechanisms such as [[https://docs.kernel.org/trace/events.html][event tracing]] that can be used
+to handle tracepoint activity.
+
+* Knowing what's supported on your kernel
+
+Running ~bpftrace --info~ provides information on what is and is not supported.
+
+#+BEGIN_EXAMPLE
+bpftrace --info
+System
+  OS: Linux 6.1.31 #1-NixOS SMP PREEMPT_DYNAMIC Tue May 30 13:03:33 UTC 2023
+  Arch: x86_64
+
+Build
+  version: v0.18.0
+  LLVM: 14.0.6
+  unsafe probe: no
+  bfd: yes
+  libdw (DWARF support): yes
+
+Kernel helpers
+  probe_read: yes
+  probe_read_str: yes
+  probe_read_user: yes
+  probe_read_user_str: yes
+  probe_read_kernel: yes
+  probe_read_kernel_str: yes
+  get_current_cgroup_id: yes
+  send_signal: yes
+  override_return: no
+  get_boot_ns: yes
+  dpath: yes
+  skboutput: yes
+
+Kernel features
+  Instruction limit: 1000000
+  Loop support: yes
+  btf: yes
+  module btf: yes
+  map batch: yes
+  uprobe refcount (depends on Build:bcc bpf_attach_uprobe refcount): yes
+
+Map types
+  hash: yes
+  percpu hash: yes
+  array: yes
+  percpu array: yes
+  stack_trace: yes
+  perf_event_array: yes
+
+Probe types
+  kprobe: yes
+  tracepoint: yes
+  perf_event: yes
+  kfunc: yes
+  iter:task: yes
+  iter:task_file: yes
+  iter:task_vma: yes
+  kprobe_multi: no
+  raw_tp_special: yes
+#+END_EXAMPLE
+
+A lot of the kernel dependent features will require certain configuration
+options to be selected. The output shared is the default for the build
+configuration used in NixOS for the ~linuxPackages_latest~ kernel. Convenient
+for me in general for demonstrations. However, I need to compile the kernel
+myself for development purposes. I present the needed configuration options for
+each type of probe.
+
+* Useful resources for learning more about bpftrace
+
+Honestly, I am pretty new to both ~bpftrace~ and eBPF myself. I plan on updating
+this page as I continue to learn more. One of my goals is learning how to use
+the [[https://github.com/brendangregg/FlameGraph/blob/master/stackcollapse-bpftrace.pl][stackcollapse-bpftrace.pl]] script for generating flamegraphs. Right now, I
+use ~perf~ for generating flamegraphs. I am also collecting useful bpftace
+snippets that I build along my journey as a kernel developer and systems
+enthusiast. These snippets can be found on my GitHub repository,
+[[https://github.com/Binary-Eater/bpftrace-scripts][Binary-Eater/bpftrace-scripts]].
+
+In general, the [[https://github.com/iovisor/bpftrace][iovisor/bpftrace]] GitHub repository has a nice [[https://github.com/iovisor/bpftrace/blob/master/docs/reference_guide.md][reference]] and
+[[https://github.com/iovisor/bpftrace/blob/master/docs/tutorial_one_liners.md][one-liner tutorial]] for new users to follow along. The [[https://github.com/iovisor/bpftrace/blob/master/man/adoc/bpftrace.adoc][manpage]] is an even more
+thorough resource.
+
+The ~tools/~ directory of the ~bpftrace~ repository also serves as a great
+reference.
+
+[[https://www.brendangregg.com/index.html][Brendan Gregg's blog]] has a number of additional examples as well.

@@ -1,0 +1,116 @@
+---
+title: "kexec"
+date: 2023-12-10T21:32:56-08:00
+draft: false
+---
+
+* What is kexec?
+
+~kexec~ is short for kernel execute. At a high level, it is analogous with the
+syscall ~exec~. ~kexec~ replaces the memory of the currently loaded kernel image
+and begins executing the newly loaded kernel image. tl;dr it enables users to
+run new kernels without needing to do a full power cycle of a system.
+
+* What is the value of kexec?
+
++ Enables a "boot once" flow for testing a potentially problematic kernel.
+  + No bootloader configuration required.
++ Does not require a complete system reboot (BIOS boot) to swap between kernel
+  images for testing.
++ Lowers the difficulty for setting up ad-hoc kernel development environments
+  using the latest kernel source tree.
+
+* What is required to use kexec?
+
+** Kconfig
+
+The kernel that will have its image rewritten (the currently booted kernel) will
+need the following kernel configuration options.
+
+#+BEGIN_SRC
+  CONFIG_KEXEC=y      # Enables support for general kexec syscall functionality.
+  CONFIG_KEXEC_FILE=y # Enables kexec_file_load syscall. See the manual for kexec_load(2) for more details.
+
+  # Optional security options
+  CONFIG_KEXEC_BZIMAGE_VERIFY_SIG=n # Verify the signing signature of the bzImage used in kexec
+  CONFIG_KEXEC_SIG=n                # If the kernel image has a signature, make sure the signature is valid when using the kexec_file_load syscall
+  CONFIG_KEXEC_SIG_FORCE=n          # Enforce that the kernel image used in the kexec_file_load syscall has a valid signature
+#+END_SRC
+
+** Userspace
+
+You will need ~kexec-tools~ in userspace to be able to configure a kernel image
+for ~kexec~.
+
+* Using kexec
+
+Here is an example of setting up a new kernel image to execute in place of the
+currently running image while reusing the kernel commandline of the previous
+image.
+
+#+BEGIN_SRC sh
+  kexec -l /path/to/vmlinuz --initrd=/path/to/initramfs.img --reuse-cmdline
+  kexec -e
+#+END_SRC
+
+The ~--initrd~ flag is optional. It is used when an initramfs image is needed to
+properly bring up a system. ~kexec -e~ will then execute the configured kernel
+without gracefully taking down any system services momentarily that might be
+impacted.
+
+~systemd~ can assist with a more graceful ~kexec~ flow for taking down services
+and even supporting ad-hoc clean-up services using ~WantedBy=kexec.target~ in
+the ~Install~ section of a systemd service definition. ~kexec -e~ is replaced
+with ~systemctl kexec~.
+
+If you want to unload the target kernel that was previously loaded by ~kexec~,
+~kexec -u~ will unload the currently running ~kexec~ target kernel.
+
+There are a number of options for the ~kexec~ commandline tool that are
+documented in the manual for ~kexec(8)~.
+
+Usage details for ~kexec~ are also well documented on the Arch Linux wiki and
+Gentoo wiki.
+
+OpenSUSE also has a more thorough [[https://documentation.suse.com/de-de/sles/15-GA/html/SLES-all/cha-tuning-kexec.html][write-up]] on ~kexec~ and ~kdump~.
+
+NOTE: It seems Gentoo uses a patched version of ~reboot~ to offer a graceful
+~-k~ flag. Gentoo probably does this since it offers an alternative to
+~systemd~, OpenRC.
+
+* Why is kexec not enabled everywhere?
+
+Lightly mentioned in this article already, ~kexec~ is not an infallible process.
+This has to do with the fact that, unlike a userspace program that might have
+its application instructions overwritten with an ~exec~ syscall, the kernel
+image being overwritten is in charge of managing devices at a very low-level.
+Device teardown and initialization may not occur in a way that leaves an
+"already-running" system in a stable state.
+
+The idea of being able to safely move to a different kernel without compromising
+the system is called kernel livepatching. Kernel livepatching is a hot area of
+research with multiple entities taking their own approaches on the matter.
+
++ [[https://ubuntu.com/blog/an-overview-of-live-kernel-patching][Canonical's solution without kexec by using ftrace hooking]]
++ [[https://documentation.suse.com/sles/12-SP4/html/SLES-kgraft/index.html][kGraft by OpenSUSE that similarly uses ftrace hooking]]
++ [[https://www.redhat.com/en/topics/linux/what-is-linux-kernel-live-patching#the-two-spaces-of-linux-system-operations][RedHat's ftrace hooking kpatch livepatch solution]]
++ [[https://en.wikipedia.org/wiki/Ksplice#Design][Ksplice using its own injector and hooking mechanism]]
+
+*NOTE:* Ksplice was initially developed by MIT students during its initial
+development, as a reference illustrating that kernel livepatching is a topic
+worth academic exploration.
+
+*DISCLAIMER:* I have not read any of the above approaches in detail. I just felt
+I should draw attention to them for curious readers interested in ways to
+potentially make ~kexec~ "more-robust".
+
+* Alternatives to kexec
+
+For "boot once" testing, using bootloader configurations to do a "boot once" is
+an option. However, many bootloaders have an involved process for achieving
+this.
+
+I have not found decent documentation on how to do this for GRUB 2 (not GRUB
+Legacy). In reality, I might work with a number of systems using different
+bootloaders such as ~systemd-boot~ and learning how to do this with every
+bootloader implementation out there seems like an adventure.
