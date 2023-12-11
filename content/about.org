@@ -1,0 +1,41 @@
+---
+title: "About"
+date: 2023-12-10T19:35:45-08:00
+draft: false
+---
+
+I am an open source enthusiast mainly interested in low-level programming and
+operating systems. My personal interests are mainly in PC-class development and
+improving the personal computing space in the open source community. On my free
+time, I mess around with input devices and the stacks related to them.
+
+For fun, I have worked on the [[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/hid/hid-nvidia-shield.c][hid-nvidia-shield]] driver. I started this project
+after playing some games with [[https://github.com/PiotrGalusza][a friend]] and learning that Xbox controllers had
+first class haptics support on Linux (thanks to the ~xpad~ driver made by
+individuals) while the NVIDIA SHIELD controller I was using did not. We were
+playing [[https://store.steampowered.com/app/263300/BlazBlue_Calamity_Trigger/][BlazBlue: Calamity Trigger]] at the time, and it was lame to not have
+haptics support in the game on my controller while the Xbox controller had a
+nice experience.
+
+For my work at NVIDIA, I do specialized work regarding [[https://en.wikipedia.org/wiki/Precision_Time_Protocol][IEEE 1588 PTP]] and other
+timestamping application support in the [[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/net/ethernet/mellanox/mlx5/core][upstream mlx5 netdev driver]] for [[https://www.nvidia.com/en-us/networking/ethernet-adapters/][NVIDIA's
+Mellanox ConnectX NIC product line]]. The mlx5 driver is a large driver due to
+the various enterprise networking applications supported by our family of
+devices. I work on a fairly small part of the driver, mainly components
+involving PTP and recently MACsec these days. If you are interested in how to
+write arbitrary userspace applications that can take advantage of various
+timestamping information provided by the kernel and potentially your networking
+hardware, I would take a look at the [[https://docs.kernel.org/networking/timestamping.html][related kernel documentation]]. I was at
+[[https://netdevconf.info/0x17/][NetDevConfx17 in Vancouver]] on behalf of NVIDIA, and there was an [[https://netdevconf.info/0x17/sessions/talk/so_timestamping-powering-fleetwide-rpc-monitoring.html][interesting
+talk by Willem de Brujin]] (upstream kernel socket timestamping maintainer and
+kernel developer at Google) on this subject as well.
+
+I do enjoy peaking around the datacenter class open source development space,
+since some of the work there can be re-used for personal computer. An example is
+BPF and its original heavy use in the networking space. Now we see more
+applications of BPF in the space of system profiling and debugging as well as
+with [[https://docs.kernel.org/hid/hid-bpf.html][HID-BPF]].
+
+I am fine with being addressed by my real name Rahul Rameshbabu or my online
+profile handle Binary-Eater (you can shorten that to beater if you prefer when
+typing in chat).

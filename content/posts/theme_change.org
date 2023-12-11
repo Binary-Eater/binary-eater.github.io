@@ -1,0 +1,45 @@
+---
+title: "Site theme change"
+tags: ["site"]
+date: 2023-12-10T18:23:18-08:00
+draft: false
+---
+
+* Why I changed the theme of my site?
+
+When I first started this page, I built my own theme [[https://github.com/Binary-Eater/hugo-theme-ghci][hugo-theme-ghci]] based on
+the work done on the [[https://github.com/Yukuro/hugo-theme-shell][hugo-theme-ghci]] theme. I did this because I dislike the
+idea of using someone else's creative work to express myself on a personal site.
+I am really thankful to people who share themes for this purpose. I just thought
+back then I could make something more creative that expresses my interests.
+Unfortunately, reality has a nice way of crashing into you like freight train.
+The work it would take for me to build a creative site on top of upstream
+development work I am interested is too much for me right now. In terms of
+programming, I want to make my C and Rust as strong as possible as well as my
+knowledge of computer architecture and algorithms.
+
+Focusing on improving this website would distract me with the JavaScript webdev
+world (which itself is vast and important). That said, I have seen some flows
+involving [[https://elmprogramming.com/][Elm]] and SPA development that would interest me for this site. tl;dr I
+do not want to write any JavaScript or its derivatives (e.g. TypeScript) if I
+can help it.
+
+I am currently using the [[https://github.com/vaga/hugo-theme-m10c][m10c]] hugo theme for this site but may change things up
+a bit if I ever get time or someone wants to help me out. I was inspired to use
+a more minimal option after looking at [[https://asahilina.net/][Asahi Lina's under construction page]] for
+a while now. It's really cool, but it has no content. That was the state of my
+site for a while essentially. While I thought the theme I made was cool, I want
+to actually post content. I think I will take a content-first approach and
+backtrack on making the site nicer.
+
+Feel free to reach out to me over Matrix if you are interested in helping me
+with designing a better site for my blogs and content.
+
+* Why I removed certain posts?
+
+I had a bunch of stub pages for topics I originally wanted to expand upon. They
+contained now actual content however and served as clutter on this page. For
+now, I have marked them as draft status and they can be found on the GitHub page
+for this repository. A lot of those pages were not related to kernel/OS
+development or any of my non-technical interests. While I find those topics
+interesting, I want to keep myself focused on a core set of topics for now.

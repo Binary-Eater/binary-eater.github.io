@@ -1,7 +1,7 @@
 ---
 title: "Haskell From Zero"
 date: 2022-01-03T19:51:18-08:00
-draft: false
+draft: true
 ---
 
 * Plans for this page

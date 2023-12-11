@@ -1,7 +1,7 @@
 ---
 title: "Nix"
 date: 2022-01-03T19:38:42-08:00
-draft: false
+draft: true
 ---
 
 * Goal of this page

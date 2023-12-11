@@ -1,7 +1,7 @@
 ---
 title: "Spacemacs"
 date: 2022-01-03T19:50:57-08:00
-draft: false
+draft: true
 ---
 
 * Plans for this page
