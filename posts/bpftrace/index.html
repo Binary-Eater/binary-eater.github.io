@@ -1,0 +1,90 @@
+<!doctype html><html lang=en-us><head><title>bpftrace // Rahul Rameshbabu</title>
+<link rel="shortcut icon" href=/favicon.ico><meta charset=utf-8><meta name=generator content="Hugo 0.121.1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Rahul Rameshbabu"><meta name=description content><link rel=stylesheet href=/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css><meta name=twitter:card content="summary"><meta name=twitter:title content="bpftrace"><meta name=twitter:description content="What is bpftrace? bpftrace is both a CLI tool and a tracing language that compiles down to Linux enhanced Berkeley Packet Filter (eBPF) instructions. The BPF VM subsystem in the Linux kernel is immensely powerful. Covering it would require a separate article. For now, think of eBPF as some kind of mechanism that magically enables sandboxed loading of injected logic into priveleged contexts from userspace. bpftrace makes use of eBPF to inject dynamic tracing instruments."><meta property="og:title" content="bpftrace"><meta property="og:description" content="What is bpftrace? bpftrace is both a CLI tool and a tracing language that compiles down to Linux enhanced Berkeley Packet Filter (eBPF) instructions. The BPF VM subsystem in the Linux kernel is immensely powerful. Covering it would require a separate article. For now, think of eBPF as some kind of mechanism that magically enables sandboxed loading of injected logic into priveleged contexts from userspace. bpftrace makes use of eBPF to inject dynamic tracing instruments."><meta property="og:type" content="article"><meta property="og:url" content="https://binary-eater.github.io/posts/bpftrace/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2023-12-10T21:32:59-08:00"><meta property="article:modified_time" content="2023-12-10T21:32:59-08:00"></head><body><header class=app-header><a href=https://binary-eater.github.io/><img class=app-header-avatar src=/avatar.jpg alt="Rahul Rameshbabu"></a>
+<span class=app-header-title>Rahul Rameshbabu</span><nav class=app-header-menu><a class=app-header-menu-item href=/>Home</a>
+-
+<a class=app-header-menu-item href=/tags/>Tags</a>
+-
+<a class=app-header-menu-item href=/about/>About</a></nav><p>Binary-Eater: A developer focused on low-level programming</p><div class=app-header-social><a href=https://github.com/Binary-Eater target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github"><title>Github</title><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg></a></div></header><main class=app-container><article class=post><header class=post-header><h1 class=post-title>bpftrace</h1><div class=post-meta><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Dec 10, 2023</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock"><title>clock</title><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>3 min read</div></div></header><div class=post-content><div id=outline-container-headline-1 class=outline-2><h2 id=headline-1>What is bpftrace?</h2><div id=outline-text-headline-1 class=outline-text-2><p><code>bpftrace</code> is both a CLI tool and a tracing language that compiles down to Linux
+enhanced Berkeley Packet Filter (eBPF) instructions. The BPF VM subsystem in the
+Linux kernel is immensely powerful. Covering it would require a separate
+article. For now, think of eBPF as some kind of mechanism that magically enables
+sandboxed loading of injected logic into priveleged contexts from userspace.
+<code>bpftrace</code> makes use of eBPF to inject dynamic tracing instruments. The
+<code>bpftrace</code> language can work with tranditional static tracing probes as well.</p></div></div><div id=outline-container-headline-2 class=outline-2><h2 id=headline-2>Different types of probes available</h2><div id=outline-text-headline-2 class=outline-text-2><p>The different types of probes are demonstrated in the bpftrace <a href=https://github.com/iovisor/bpftrace/blob/master/docs/reference_guide.md#probes>reference guide</a>
+in the source tree. As I continue to learn more about <code>bpftrace</code> and think more
+details should be expanded about each probe type, I will add that information to
+this post. For now, I will cover what kernel build configuration options are
+required for supporting these probes.</p><div id=outline-container-headline-3 class=outline-3><h3 id=headline-3>kprobe / kretprobe</h3><div id=outline-text-headline-3 class=outline-text-3><p>Minimal configuration required.</p><div class="src src-text"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>  CONFIG_BPF_EVENTS=y
+</span></span><span style=display:flex><span>  CONFIG_KPROBES=y</span></span></code></pre></div></div><p>Additional helpful configuration options.</p><div class="src src-text"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>  CONFIG_BPF_KPROBE_OVERRIDE=y # Enables overriding functions that would be executed after kprobe point
+</span></span><span style=display:flex><span>  CONFIG_KPROBES_ON_FTRACE=y   # Optimizes kprobes with ftrace tracers already generated
+</span></span><span style=display:flex><span>  CONFIG_KPROBE_EVENTS=y       # Support dynamically inserting tracing events using kprobes</span></span></code></pre></div></div></div></div><div id=outline-container-headline-4 class=outline-3><h3 id=headline-4>kfunc / kretfunc</h3><div id=outline-text-headline-4 class=outline-text-3><p>Minimal configuration required.</p><div class="src src-text"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>  CONFIG_DEBUG_INFO_BTF=y</span></span></code></pre></div></div><p>Additional helpful configuration options.</p><div class="src src-text"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>  CONFIG_MODULE_ALLOW_BTF_MISMATCH=y # Allows modules with mismatching BTF information against running kernel to be loaded</span></span></code></pre></div></div></div></div><div id=outline-container-headline-5 class=outline-3><h3 id=headline-5>uprobe / uretprobe</h3><div id=outline-text-headline-5 class=outline-text-3><div class="src src-text"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>  CONFIG_UPROBE=y</span></span></code></pre></div></div><p>Additional helpful configuration options.</p><div class="src src-text"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>  CONFIG_UPROBE_EVENTS=y # Support dynamically setting uprobes/uretprobes using memory offsets of userspace programs
+</span></span><span style=display:flex><span>                         # Link: https://docs.kernel.org/trace/uprobetracer.html</span></span></code></pre></div></div></div></div><div id=outline-container-headline-6 class=outline-3><h3 id=headline-6>tracepoint</h3><div id=outline-text-headline-6 class=outline-text-3><p>Minimal configuration required.</p><div class="src src-text"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>  CONFIG_TRACEPOINTS=y</span></span></code></pre></div></div><p>Additional helpful configuration options.</p><div class="src src-text"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>  CONFIG_TRACEPOINT_BENCHMARK=y # For benchmarking the tracepoint feature in the kernel using a kernel tracepoint</span></span></code></pre></div></div><p>Here is <a href=https://docs.kernel.org/trace/tracepoints.html>documentation for how to implement tracepoints in kernel code</a>. Even
+without <code>bpftrace</code>, there are mechanisms such as <a href=https://docs.kernel.org/trace/events.html>event tracing</a> that can be used
+to handle tracepoint activity.</p></div></div></div></div><div id=outline-container-headline-7 class=outline-2><h2 id=headline-7>Knowing what's supported on your kernel</h2><div id=outline-text-headline-7 class=outline-text-2><p>Running <code>bpftrace --info</code> provides information on what is and is not supported.</p><pre class=example>
+bpftrace --info
+System
+  OS: Linux 6.1.31 #1-NixOS SMP PREEMPT_DYNAMIC Tue May 30 13:03:33 UTC 2023
+  Arch: x86_64
+
+Build
+  version: v0.18.0
+  LLVM: 14.0.6
+  unsafe probe: no
+  bfd: yes
+  libdw (DWARF support): yes
+
+Kernel helpers
+  probe_read: yes
+  probe_read_str: yes
+  probe_read_user: yes
+  probe_read_user_str: yes
+  probe_read_kernel: yes
+  probe_read_kernel_str: yes
+  get_current_cgroup_id: yes
+  send_signal: yes
+  override_return: no
+  get_boot_ns: yes
+  dpath: yes
+  skboutput: yes
+
+Kernel features
+  Instruction limit: 1000000
+  Loop support: yes
+  btf: yes
+  module btf: yes
+  map batch: yes
+  uprobe refcount (depends on Build:bcc bpf_attach_uprobe refcount): yes
+
+Map types
+  hash: yes
+  percpu hash: yes
+  array: yes
+  percpu array: yes
+  stack_trace: yes
+  perf_event_array: yes
+
+Probe types
+  kprobe: yes
+  tracepoint: yes
+  perf_event: yes
+  kfunc: yes
+  iter:task: yes
+  iter:task_file: yes
+  iter:task_vma: yes
+  kprobe_multi: no
+  raw_tp_special: yes
+</pre><p>A lot of the kernel dependent features will require certain configuration
+options to be selected. The output shared is the default for the build
+configuration used in NixOS for the <code>linuxPackages_latest</code> kernel. Convenient
+for me in general for demonstrations. However, I need to compile the kernel
+myself for development purposes. I present the needed configuration options for
+each type of probe.</p></div></div><div id=outline-container-headline-8 class=outline-2><h2 id=headline-8>Useful resources for learning more about bpftrace</h2><div id=outline-text-headline-8 class=outline-text-2><p>Honestly, I am pretty new to both <code>bpftrace</code> and eBPF myself. I plan on updating
+this page as I continue to learn more. One of my goals is learning how to use
+the <a href=https://github.com/brendangregg/FlameGraph/blob/master/stackcollapse-bpftrace.pl>stackcollapse-bpftrace.pl</a> script for generating flamegraphs. Right now, I
+use <code>perf</code> for generating flamegraphs. I am also collecting useful bpftace
+snippets that I build along my journey as a kernel developer and systems
+enthusiast. These snippets can be found on my GitHub repository,
+<a href=https://github.com/Binary-Eater/bpftrace-scripts>Binary-Eater/bpftrace-scripts</a>.</p><p>In general, the <a href=https://github.com/iovisor/bpftrace>iovisor/bpftrace</a> GitHub repository has a nice <a href=https://github.com/iovisor/bpftrace/blob/master/docs/reference_guide.md>reference</a> and
+<a href=https://github.com/iovisor/bpftrace/blob/master/docs/tutorial_one_liners.md>one-liner tutorial</a> for new users to follow along. The <a href=https://github.com/iovisor/bpftrace/blob/master/man/adoc/bpftrace.adoc>manpage</a> is an even more
+thorough resource.</p><p>The <code>tools/</code> directory of the <code>bpftrace</code> repository also serves as a great
+reference.</p><p><a href=https://www.brendangregg.com/index.html>Brendan Gregg's blog</a> has a number of additional examples as well.</p></div></div></div><div class=post-footer></div></article></main></body></html>
