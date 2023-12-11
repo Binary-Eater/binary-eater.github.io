@@ -84,6 +84,19 @@ Here is [[https://docs.kernel.org/trace/tracepoints.html][documentation for how 
 without ~bpftrace~, there are mechanisms such as [[https://docs.kernel.org/trace/events.html][event tracing]] that can be used
 to handle tracepoint activity.
 
+* Some snippets using the hid-nvidia-shield driver
+
+The ~hid-nvidia-shield~ driver is a project I am fond of and find simple enough
+as a practice tool for kernel exercises. These snippets can be applied to other
+drivers as well, meaning you do not need a device like the 2017 SHIELD
+controller to practice. Just having access to the linux kernel built with the
+needed configuration is enough. These examples are run using a kernel compiled
+with [[https://docs.kernel.org/bpf/btf.html][BTF information]].
+
+# TODO example
+
+** 
+
 * Knowing what's supported on your kernel
 
 Running ~bpftrace --info~ provides information on what is and is not supported.
