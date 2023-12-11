@@ -1,7 +1,7 @@
 ---
 title: "Site Tweaks"
 date: 2022-01-03T19:56:16-08:00
-draft: false
+draft: true
 ---
 
 Currently, the site uses [[https://github.com/Binary-Eater][hugo-theme-ghci]] for its functionality and style
