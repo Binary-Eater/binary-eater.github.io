@@ -1,5 +1,6 @@
 ---
 title: "bpftrace"
+tags: ["kernel"]
 date: 2023-12-10T21:32:59-08:00
 draft: false
 ---

@@ -30,9 +30,9 @@ hardware, I would take a look at the [[https://docs.kernel.org/networking/timest
 talk by Willem de Brujin]] (upstream kernel socket timestamping maintainer and
 kernel developer at Google) on this subject as well.
 
-I do enjoy peaking around the datacenter class open source development space,
-since some of the work there can be re-used for personal computer. An example is
-BPF and its original heavy use in the networking space. Now we see more
+I do enjoy peeking around the datacenter class open source development space,
+since some of the work there can be re-used for personal computing. An example
+is BPF and its original heavy use in the networking space. Now we see more
 applications of BPF in the space of system profiling and debugging as well as
 with [[https://docs.kernel.org/hid/hid-bpf.html][HID-BPF]].
 
