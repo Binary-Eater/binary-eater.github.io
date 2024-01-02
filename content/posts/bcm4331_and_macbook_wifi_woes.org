@@ -1,0 +1,220 @@
+---
+title: "bcm4331 and MacBook WiFi woes"
+tags: ["kernel"]
+date: 2024-01-01T18:09:27-08:00
+draft: false
+---
+
+* Story Time
+
+**DISCLAIMER:** skip this section if you want to get to the core content.
+
+Before running off thinking this has nothing to do with Linux kernel
+development, we will get there (I promise). However, I think some background
+context is in order. Rewind a year back to LPC 2022, I was attending LPC for the
+very first time (virtually). I was super excited since LPC is basically a
+treasure trove of talks that typically catch my interest. One downside though
+was that I had to primarily follow the eBPF and Networking track since I was
+sponsored by NVIDIA (and more specifically, my team) to attend. Networking is
+interesting in general, but I tend to like topics in any subsystem that are more
+focused on PC-class problems rather than datacenter-class. My job at NVIDIA is
+heavily focused on networking (datacenter-class) in the Linux kernel (but more
+on that in my [[{{< ref "/about.org" >}}][about]] page).
+
+As luck would have it, I did manage to sneak in watching a couple of
+non-Networking related talks at LPC 2022. Two which really stood out to me were
+[[https://lpc.events/event/16/contributions/1367/]["Extending EFI support in Linux to new architectures"]] and [[https://lpc.events/event/16/contributions/1202/]["nouveau in the times
+of nvidia firmware and open source kernel module"]]. In the first talk, the
+content helped break down the EFI boot flow based on the UEFI specification. It
+then broke down different Linux boot patterns that mapped to the stages after
+the EFI firmware ~LoadImage()~ / ~StartImage()~ calls. Honestly, I had not idea
+what the process looked like between the stages of EFI firmware to
+"bootloader/EFI stub" in the boot process till this talk. In the next talk,
+there was some discussion about what NVIDIA could do for the nouveau community.
+Jason Gunthorpe, the linux kernel RDMA maintainer (works on IOMMU as well in the
+kernel) as well as VP and distinguished engineer at NVIDIA, proposed that it
+might make sense for NVIDIA to provide option ROMs as the correct distribution
+method for the firmware control bits needed to work with NVIDIA GPUs. (Fast
+forward in time, we landed GSP in the linux-firmware tree though the blobs are
+quite large and updating these blobs is problematic in terms of API
+compatibility. This is a non-issue for NVIDIA internal drivers since the
+firmware and driver have a more glued development process compared to typical
+upstream kernel drivers.) Knowing Jason, I was sure his proposal was a good one.
+However, I was just sitting there dumbfounded thinking to myself "what is an
+option ROM?"
+
+Yeah, I did not know what an option ROM was... As I post more articles, it will
+become apparent that there are a lot of things that I do not know with regards
+to low-level computer science concepts (which is a tragedy). An option ROM is a
+firmware blob that is loaded on the main system ROM or the ROM of an expansion
+device. This blob will take care of both device initialization as well as
+extending additional functionality on top of the BIOS image. This means that an
+option ROM can instantiate special services in the BIOS for things like graphics
+or audio related operations that can then be made available to the booted OS.
+
+LPC 2022 got me thinking that there is a lot I do not know about boot firmware
+and how it sets up the boot stages on PC-class devices. I figured I could learn
+through the process of porting [[https://doc.coreboot.org/index.html][coreboot]] on a device. Having graduated for a
+while and working out of my apartment during the COVID-19 pandemic, my personal
+laptop was not seeing much use. However, it was a nice device that could be well
+used rather than abused for a learning experiment. I decided to gift it to a
+family member who would just share his wife's laptop at the time and struggled
+doing anything personal. EFI is one of the most critical parts of a system and
+if I did not have a good plan, I could end up with something that I could not
+trivially recover and work with.
+
+While searching around on this topic, I made a very interesting discovery. A
+company called CMIzapper made a device called a [[https://www.cmizapper.com/products/mattcard.html][Matt card]], which is a pluggable
+EFI ROM chip that takes advantage of LPC+SPI connectors on older MacBook devices
+to bypass the EFI ROM on the logic board. I assume Apple had this connector for
+support technicians to be able to work on devices with a bypass method in case a
+MacBook owner set a firmware password on the device or something was wrong with
+the EFI ROM. Truthfully, this seems like a pretty poor security model for a
+device, and I assume this design passed for a while before more thought was put
+into root of trust for PC-class devices. Keep in mind the Trusted Computing
+Group published the first TPM2.0 standard in April 2014. While the connector may
+seem bad from an end-user perspective, it seemed perfect for some EFI
+development enthusiast. The LPC+SPI connector seems like the perfect interface
+for coreboot testing.
+
+I decided to take to eBay to find an old MacBook device that would be the
+appropriate candidate. I ended up finding a MacBookPro8,3 that fit the bill.
+However, there is no existing Matt card that has the same ROM chip as the
+device. Honestly, this was fine since I rather make a custom PCB for this that
+is open source, and I could add something for making it trivial to dump custom
+payload on the ROM chip. Keep in mind this is a back burner project in my low
+priority bin, so...
+
+Anyway for the longest time (a whole year), I have only needed my personal
+desktop for the most part and have not used a laptop for personal use. Recently,
+I started travelling more and would like trivial access to an environment that
+enables me to follow up on discussions on kernel mailing lists, so I set up the
+MacBookPro8,3 by purging the system and setting up NixOS on it with a LVM on
+LUKS on LVM scheme with full disk encryption with encrypted ~/boot~. Also, this
+is a great way to motivate me to look into my DIY EFI test breakout board idea
+(kernel-related activity always takes the highest priority for me).
+
+* WiFi woes with bcm4331
+
+The device worked pretty well with NixOS out of the box, except for the WiFi
+which was very problematic. NixOS is a really smart Linux distribution. In fact,
+I consider NixOS to be less of a Linux distribution and more of a programmatic
+ecosystem (that uses a functional programming-esque DSL) for stitching userspace
+components of Linux and the kernel to get a booting system (almost like guided
+Linux from Scratch). ~nixos-generate-config~ supports generate a dynamic
+configuration based on a hardware scan of the device. Anything hardware specific
+is placed in ~/etc/nixos/hardware-configuration.nix~ and more generic options
+are passed to ~/etc/nixos/configuration.nix~ if the file does not exist.
+
+The ~hardware-configuration.nix~ file contained a specification for installing
+an out-of-tree proprietary Broadcom driver for the wireless NIC. This
+configuration would lead to WiFi connections that would constantly drop. From
+simple kernel debugging (aka reading the kernel logs), the Broadcom proprietary
+~wl~ driver triggers this warning whenever the connection drops.
+
+#+BEGIN_SRC
+[Jan 1 21:50] ------------[ cut here ]------------
+[  +0.000005] WARNING: CPU: 5 PID: 731 at net/wireless/sme.c:1209 cfg80211_roamed+0x505/0x590 [cfg80211]
+[  +0.000065] Modules linked in: snd_seq_dummy snd_hrtimer snd_seq snd_seq_device nft_chain_nat xt_MASQUERADE nf_nat xfrm_user xfrm_algo xt_addrtype overlay amdgpu af_packet snd_hda_codec_cirrus snd_hda_codec_generic ledtrig_audio drm_exec amdxcp gpu_sched xt_conntrack nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 ip6t_rpfilter ipt_rpfilter xt_pkttype xt_LOG nf_log_syslog xt_tcpudp nft_compat nf_tables nfnetlink sch_fq_codel nls_iso8859_1 nls_cp437 vfat fat btusb btrtl i915 intel_rapl_msr joydev mei_hdcp mei_pxp at24 btintel iTCO_wdt uvcvideo btbcm intel_pmc_bxt radeon intel_rapl_common btmtk uinput watchdog applesmc snd_hda_codec_hdmi x86_pkg_temp_thermal ctr intel_powerclamp bluetooth snd_hda_intel coretemp atkbd videobuf2_vmalloc uvc videobuf2_memops libps2 crc32_pclmul polyval_clmulni serio polyval_generic gf128mul snd_intel_dspcfg ghash_clmulni_intel vivaldi_fmap videobuf2_v4l2 snd_intel_sdw_acpi drm_suballoc_helper rapl drm_buddy drm_ttm_helper videodev snd_hda_codec ttm ecdh_generic tg3 ecc loop intel_cstate crc16
+[  +0.000043]  tun snd_hda_core drm_display_helper videobuf2_common libphy cec tap mousedev evdev snd_hwdep hid_appleir mac_hid intel_uncore acpi_als drm_kms_helper snd_pcm mc bcm5974 i2c_i801 intel_gtt snd_timer industrialio_triggered_buffer ptp agpgart macvlan mei_me apple_mfi_fastcharge i2c_smbus snd kfifo_buf thunderbolt lpc_ich apple_gmux sbs soundcore mei bridge bcma pps_core i2c_algo_bit industrialio video wmi tiny_power_button sbshc stp ac llc button wl(PO) cfg80211 rfkill kvm_intel kvm drm irqbypass fuse backlight firmware_class efi_pstore configfs efivarfs dmi_sysfs ip_tables x_tables autofs4 dm_crypt cbc encrypted_keys trusted asn1_encoder tee tpm rng_core input_leds hid_apple led_class hid_generic usbhid hid sd_mod t10_pi crc64_rocksoft crc64 crc_t10dif crct10dif_generic ahci libahci libata uhci_hcd ehci_pci ehci_hcd crct10dif_pclmul crct10dif_common sha512_ssse3 sha512_generic sha256_ssse3 sha1_ssse3 aesni_intel usbcore scsi_mod libaes crypto_simd cryptd scsi_common usb_common rtc_cmos btrfs blake2b_generic
+[  +0.000077]  libcrc32c crc32c_generic crc32c_intel xor raid6_pq dm_snapshot dm_bufio dm_mod dax
+[  +0.000006] CPU: 5 PID: 731 Comm: wl_event_handle Tainted: P        W  O       6.6.8 #1-NixOS
+[  +0.000003] Hardware name: Apple Inc. MacBookPro8,3/Mac-942459F5819B171B, BIOS 87.0.0.0.0 06/13/2019
+[  +0.000002] RIP: 0010:cfg80211_roamed+0x505/0x590 [cfg80211]
+[  +0.000051] Code: 14 24 49 0f 43 f6 48 89 c1 48 8d 3c 32 48 89 f8 48 29 d8 48 39 f0 48 0f 42 c6 48 29 fb 48 01 d1 48 01 c3 e9 14 fd ff ff 0f 0b <0f> 0b 41 0f b7 4c 24 58 66 85 c9 75 61 bd 01 00 00 00 bb 01 00 00
+[  +0.000002] RSP: 0018:ffffc90000773bd8 EFLAGS: 00010246
+[  +0.000002] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+[  +0.000001] RDX: 0000000000000002 RSI: 00000000fffffe00 RDI: ffffffffc0b45c3b
+[  +0.000001] RBP: ffff88810c0ec3c0 R08: 0000000000000000 R09: 0000000000000000
+[  +0.000001] R10: 0000000000000002 R11: 0000030204050301 R12: ffffc90000773c20
+[  +0.000001] R13: ffff88810c9c6800 R14: ffffc90000773c20 R15: 0000000000000000
+[  +0.000001] FS:  0000000000000000(0000) GS:ffff88845fa80000(0000) knlGS:0000000000000000
+[  +0.000002] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[  +0.000001] CR2: 00007f79bc0093e8 CR3: 0000000208420003 CR4: 00000000000606e0
+[  +0.000002] Call Trace:
+[  +0.000003]  <TASK>
+[  +0.000001]  ? cfg80211_roamed+0x505/0x590 [cfg80211]
+[  +0.000050]  ? __warn+0x81/0x130
+[  +0.000005]  ? cfg80211_roamed+0x505/0x590 [cfg80211]
+[  +0.000051]  ? report_bug+0x171/0x1a0
+[  +0.000003]  ? handle_bug+0x41/0x70
+[  +0.000003]  ? exc_invalid_op+0x17/0x70
+[  +0.000003]  ? asm_exc_invalid_op+0x1a/0x20
+[  +0.000004]  ? cfg80211_get_bss+0x2cb/0x2e0 [cfg80211]
+[  +0.000045]  ? cfg80211_roamed+0x505/0x590 [cfg80211]
+[  +0.000050]  wl_bss_roaming_done.constprop.0+0xe1/0x160 [wl]
+[  +0.000060]  ? wl_notify_roaming_status+0x6b/0xa0 [wl]
+[  +0.000048]  ? wl_event_handler+0x7a/0x210 [wl]
+[  +0.000048]  ? wl_cfg80211_add_key+0x620/0x620 [wl]
+[  +0.000048]  ? kthread+0xe8/0x120
+[  +0.000003]  ? __pfx_kthread+0x10/0x10
+[  +0.000002]  ? ret_from_fork+0x34/0x50
+[  +0.000002]  ? __pfx_kthread+0x10/0x10
+[  +0.000002]  ? ret_from_fork_asm+0x1b/0x30
+[  +0.000004]  </TASK>
+[  +0.000001] ---[ end trace 0000000000000000 ]---
+#+END_SRC
+
+I assume that the roaming handling logic in the proprietary driver is buggy
+which leads to the frequent disconnects. I did not bother to properly
+investigate it (I could have though) since it's a proprietary driver that
+Broadcom considers the devices supported to be "legacy".
+
+The community had actually made an upstream reverse engineered driver that
+supports bcm4331, the [[https://wireless.wiki.kernel.org/en/users/drivers/b43][b43]] driver. The main requirement for using this driver is
+to use out-of-tree (due to licensing) extracted firmware blobs for the device.
+NixOS makes it extremely trivial to acquisition these blobs compared to some
+other distributions, making this a trivial process for me.
+
+The experience was significantly improved compared to Broadcom's proprietary
+~wl~ driver. Was doing some Rust practice on my setup while away from home and
+wanted to push my changes to GitHub. I use git over ssh, and ssh uses IP QoS by
+default for prioritizing its traffic channels. I thought about breaking down the
+ToS field in IPv4 headers to better explain this concept. However, the Wikipedia
+for this is pretty good, so I will leave a link instead,
+[[https://en.wikipedia.org/wiki/Type_of_service#Allocation]]. Basically, network
+applications can annotate the "priority" of traffic they send. A lot of
+networking hardware try to prioritize video, voice, and background traffic
+differently from normal traffic. This is to insure that other network loads you
+may run in the background do not disturb an important company or family video or
+voice-chat. This also enables low priority traffic to be de-prioritized compared
+to normal traffic. QoS is really important for offering the incredibly seamless
+and wonderful network experience people take for granted today.
+
+Unfortunately, it seems that when Tx traffic is lands on any of the DMA-ed rings
+for different QoS priorities other than the default best-effort ring in the
+~b43~ driver, the traffic fails to actually xmit with no indicator or error
+completion events from the device for the driver to trace. I sent an initial
+patch series to the linux-wireless mailing list with the expectation that I
+would need feedback (I found bugs in the existing codebase with regards to an
+existing mechanism for disabling QoS in the driver).
+
+[[https://lore.kernel.org/linux-wireless/20231230045105.91351-1-sergeantsagara@protonmail.com/]]
+
+I already knew that likely the very first patch in the series I was sending
+would need to be dropped. I mainly wanted to better understand the intent of the
+warning. We had some good discussions about the queue index selection for
+~ieee80211~ related function calls. What did surprise me though was the
+expectation that the firmware I was testing with may be "too old." I had tested
+with both a 2011-02-23 FW release and a 2012-08-15 FW release, which both lead
+to the same behavior on a device that released in early 2011. These releases are
+the only FW releases that are provided by the b43-dev community, so my patch to
+drop QoS from being enabled on bcm4331 in the series was favored. However,
+enabling QoS is important, but I am not entirely sold that a newer firmware
+image extraction will make this "magically" work.
+
+I am hoping my v2 will likely be merged, given the state of review.
+
+[[https://lore.kernel.org/linux-wireless/20231231102632.4e6f39eb@barney/]]
+
+* Conclusion
+
+While my patch series may fix the experience when disabling QoS on ~b43~ and
+improve the out-of-box experience for bcm4331 users, disabling QoS by default
+for the device is kind of lame. My first goal was to make the device fully
+usable with the driver in a quick manner. Now, I think I need to look at FW
+cutting new firmware blobs from newer Broadcom proprietary driver releases. I
+expect the newly cut FW to not magically resolve this, so I assume the next step
+will be reverse engineering how QoS is set up by the ~wl~ driver on bcm4331.
+
+Anyway, what a way to wrap up 2023.
