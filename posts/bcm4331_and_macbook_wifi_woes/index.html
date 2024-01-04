@@ -22,7 +22,7 @@ non-Networking related talks at LPC 2022. Two which really stood out to me were
 of nvidia firmware and open source kernel module"</a>. In the first talk, the
 content helped break down the EFI boot flow based on the UEFI specification. It
 then broke down different Linux boot patterns that mapped to the stages after
-the EFI firmware <code>LoadImage()</code> / <code>StartImage()</code> calls. Honestly, I had not idea
+the EFI firmware <code>LoadImage()</code> / <code>StartImage()</code> calls. Honestly, I had no idea
 what the process looked like between the stages of EFI firmware to
 "bootloader/EFI stub" in the boot process till this talk. In the next talk,
 there was some discussion about what NVIDIA could do for the nouveau community.
@@ -69,7 +69,7 @@ appropriate candidate. I ended up finding a MacBookPro8,3 that fit the bill.
 However, there is no existing Matt card that has the same ROM chip as the
 device. Honestly, this was fine since I rather make a custom PCB for this that
 is open source, and I could add something for making it trivial to dump custom
-payload on the ROM chip. Keep in mind this is a back burner project in my low
+payloads on the ROM chip. Keep in mind this is a back burner project in my low
 priority bin, so…</p><p>Anyway for the longest time (a whole year), I have only needed my personal
 desktop for the most part and have not used a laptop for personal use. Recently,
 I started travelling more and would like trivial access to an environment that
@@ -82,10 +82,10 @@ which was very problematic. NixOS is a really smart Linux distribution. In fact,
 I consider NixOS to be less of a Linux distribution and more of a programmatic
 ecosystem (that uses a functional programming-esque DSL) for stitching userspace
 components of Linux and the kernel to get a booting system (almost like guided
-Linux from Scratch). <code>nixos-generate-config</code> supports generate a dynamic
-configuration based on a hardware scan of the device. Anything hardware specific
-is placed in <code>/etc/nixos/hardware-configuration.nix</code> and more generic options
-are passed to <code>/etc/nixos/configuration.nix</code> if the file does not exist.</p><p>The <code>hardware-configuration.nix</code> file contained a specification for installing
+Linux from Scratch). <code>nixos-generate-config</code> generates a dynamic configuration
+based on a hardware scan of the device. Anything hardware specific is placed in
+<code>/etc/nixos/hardware-configuration.nix</code> and more generic options are passed to
+<code>/etc/nixos/configuration.nix</code> if the file does not exist.</p><p>The <code>hardware-configuration.nix</code> file contained a specification for installing
 an out-of-tree proprietary Broadcom driver for the wireless NIC. This
 configuration would lead to WiFi connections that would constantly drop. From
 simple kernel debugging (aka reading the kernel logs), the Broadcom proprietary
@@ -144,11 +144,11 @@ for this is pretty good, so I will leave a link instead,
 <a href=https://en.wikipedia.org/wiki/Type_of_service#Allocation>https://en.wikipedia.org/wiki/Type_of_service#Allocation</a>. Basically, network
 applications can annotate the "priority" of traffic they send. A lot of
 networking hardware try to prioritize video, voice, and background traffic
-differently from normal traffic. This is to insure that other network loads you
-may run in the background do not disturb an important company or family video or
-voice-chat. This also enables low priority traffic to be de-prioritized compared
-to normal traffic. QoS is really important for offering the incredibly seamless
-and wonderful network experience people take for granted today.</p><p>Unfortunately, it seems that when Tx traffic is lands on any of the DMA-ed rings
+differently from normal traffic. This is to ensure that other network loads you
+may run in the background do not disturb an important company or family
+video/voice-chat. This also enables low priority traffic to be de-prioritized
+compared to normal traffic. QoS is really important for offering the incredibly
+seamless and wonderful network experience people take for granted today.</p><p>Unfortunately, it seems that when Tx traffic lands on any of the DMA-ed rings
 for different QoS priorities other than the default best-effort ring in the
 <code>b43</code> driver, the traffic fails to actually xmit with no indicator or error
 completion events from the device for the driver to trace. I sent an initial
