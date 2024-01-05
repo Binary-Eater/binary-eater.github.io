@@ -29,3 +29,7 @@ paginate = 8
     icon = "github"
     name = "Github"
     url = "https://github.com/Binary-Eater"
+  [[params.social]]
+    icon = "message-circle"
+    name = "Matrix"
+    url = "https://matrix.to/#/@binary-eater:beater.town"
