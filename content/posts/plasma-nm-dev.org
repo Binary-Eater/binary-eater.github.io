@@ -1,0 +1,107 @@
+---
+title: "Speedrunning setting up a plasma-nm development environment"
+tags: ["plasma"]
+date: 2024-02-11T19:55:59-08:00
+draft: false
+---
+
+* Why did I set up a plasma-nm development environment in the first place?
+
+** Why did I want to contribute changes to plasma-nm?
+
+If you have peaked at my GitHub profile or activity, you probably know a couple of
+things about me.
+
+1. I do not use Plasma or GNOME but rather Xmonad.
+2. I mostly focus on kernel development and related low-level subjects these
+   days.
+
+So why would I bother contributing to ~plasma-nm~? Well, the company that pays
+me for my day job uses Cisco AnyConnect as the VPN solution. From our company's
+IT management perspective, Cisco AnyConnect "supports" Windows, macOS, and
+Linux. The Linux client does not meet our needs, and we need to support FreeBSD
+development as well. We depend heavily on the [[https://www.infradead.org/openconnect/][openconnect]] reverse-engineered
+alternative. The company uses a strict SSO model backed by Microsoft Identity
+Platform services. Support for SSO flows is available through the AnyConnect
+ecosystem through the SAML mechanism, which openconnect has implemented in
+recent years. There are two possible flows/algorithms for the SAML model with
+AnyConnect. One flow involves needing to feed cookies programmatically back into
+~libopenconnect~ for the authentication browser to succeed. The other flow
+involves redirecting a base64 blob that was generated through an authentication
+process done in a browser like Firefox or Chromium back to a localhost server
+run by openconnect for the sake of IPC with the external browser program. While
+the latter flow is much easier to utilize by users with no additional code
+changes required to be used, Cisco limits the external browser flow to newer
+hardware devices in their product model. This means supporting both flows is an
+important task for providing support for a variety of users.
+
+My personal motivation for adding this support was to empower young college
+students and academics who are interested in developing Linux but need to
+utilize their IT infrastructure in their institutions at the same time. Using
+AnyConnect/GlobalProtect on Linux platforms tends to not be viable for students,
+leading them to depend on ~openconnect~. A number of academic institutions have
+now started enforcing SSO flows for their VPN login flows. Not having the bits
+needed to support the cookie-based SSO authentication flow using ~plasma-nm~
+along with ~openconnect~ would be disastrous for students using the Plasma
+environment.
+
+** Why not use NixOS like I normally do for working on random projects?
+
+Recapping, the reason I use NixOS is that it empowers me with the ability to
+rapidly work on complex upstream open source projects without needing to waste
+large amounts of time with development environment setup to be able to rebuild
+and use those projects from source. The first two features I authored for adding
+both [[https://invent.kde.org/plasma/plasma-nm/-/merge_requests/197][SAML external browser flows]] and [[https://invent.kde.org/plasma/plasma-nm/-/merge_requests/208][SAML built-in browser flows]] for ~plasma-nm~
+were actually tested on NixOS, where I was able to work on these features
+without spending much time due to how quickly NixOS let me test my ~plasma-nm~
+tree with zero manual setup work. I just passed a pointer to my local
+~plasma-nm~ tree, and NixOS took care of the rest for letting me test my
+~plasma-nm~ changes. I do not like MIS-type problems, which I feel NixOS
+eliminates in a lot of cases.
+
+The reason I did not continue using NixOS for ~plasma-nm~ development is that
+NixOS will base its dependencies off of released versions. With the Plasma 5.27
+freeze to focus on the Plasma 6 efforts, the upstream codebase for Plasma
+components and frameworks heavily diverged from the 5.27 release components. To
+be able to get an upstream version of plasma-nm compatible with NixOS, I would
+need to rebuild a lot of dependencies from source. This is something that I did
+not want to burn time on. Recently, there has been work on a [[https://github.com/nix-community/kde2nix?tab=readme-ov-file][kde2nix]] packaging
+(which has now been upstreamed), but I was always running into cache misses,
+etc., and saw a lot of rebuilding from source.
+
+* Shortcutting the work needed to get a plasma-nm development environment
+
+Now, it's time to speedrun getting a ~plasma-nm~ development environment.
+
+1. Install the [[https://neon.kde.org/download][KDE Neon Developer Edition image]] (likely something like Arch
+   Linux can work as well)
+2. Set up ~kdesrc-build~ using the [[https://community.kde.org/Get_Involved/development][wiki guide]] (**NOTE:** ~kde-builder~ is a
+   drop-in replacement for ~kdesrc-build~ that is being tested at the time of
+   writing this article)
+3. [[https://community.kde.org/Get_Involved/development/Set_up_a_development_environment][Set up a development environment with kdesrc-build or kde-builder]]
+4. [[https://community.kde.org/Get_Involved/development/Build_software_with_kdesrc-build][Build software with kdesrc-build]]
+5. The examples shown in the guide in step 4 all use ~kdesrc-run~ with very
+   isolated GUI programs. You will likely notice that ~plasma-nm~ cannot be
+   tested the same way.
+6. We will do ~kdesrc-build plasma-nm~ to build all the ~plasma-nm~ KDE
+   frameworks dependencies. I actually just note the dependencies manually and
+   ~kdesrc-build~ each one, but that involves reading the CMake files in the
+   ~plasma-nm~ project. The point of this article is speedrunning getting
+   started with ~plasma-nm~ development.
+7. In a directory outside the ~~/kde~ directory, ~git clone
+   https://invent.kde.org/plasma/plasma-nm.git && cd plasma-nm~
+8. ~mkdir build~
+9. ~cd build~
+10. ~cmake ../ -DCMAKE_FIND_ROOT_PATH=~/kde/ -DCMAKE_INSTALL_PREFIX=/usr [-DDISABLE_MODEMMANAGER_SUPPORT=true]~
+11. ~make~
+12. ~sudo make install~
+13. Restart the plasma shell for the new ~plasma-nm~ instance to be loaded (I
+    login-logout as my mindless speedrunning solution).
+
+The big thing to notice is that my testing flow is heavily based on the
+[[https://invent.kde.org/plasma/plasma-nm/-/blob/master/README.md][plasma-nm README]]. The main thing I did was simplify handling the dependencies
+using ~kdesrc-build~. I originally considered compiling and installing all the
+KDE frameworks dependencies and transitive dependencies by hand. It proved to be
+overwhelming. Instead, I depend on ~kdesrc-build~ to do this on my behalf and
+use ~-DCMAKE_FIND_ROOT_PATH=~/kde/~ to let CMake lookup the pre-builts of the
+KDE frameworks dependencies made by ~kdesrc-build~.
