@@ -1,0 +1,75 @@
+<!doctype html><html lang=en-us><head><title>Speedrunning setting up a plasma-nm development environment // Rahul Rameshbabu</title>
+<link rel="shortcut icon" href=/favicon.ico><meta charset=utf-8><meta name=generator content="Hugo 0.122.0"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Rahul Rameshbabu"><meta name=description content><link rel=stylesheet href=/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css><meta name=twitter:card content="summary"><meta name=twitter:title content="Speedrunning setting up a plasma-nm development environment"><meta name=twitter:description content="Why did I set up a plasma-nm development environment in the first place? Why did I want to contribute changes to plasma-nm? If you have peaked at my GitHub profile or activity, you probably know a couple of things about me.
+I do not use Plasma or GNOME but rather Xmonad. I mostly focus on kernel development and related low-level subjects these days. So why would I bother contributing to plasma-nm?"><meta property="og:title" content="Speedrunning setting up a plasma-nm development environment"><meta property="og:description" content="Why did I set up a plasma-nm development environment in the first place? Why did I want to contribute changes to plasma-nm? If you have peaked at my GitHub profile or activity, you probably know a couple of things about me.
+I do not use Plasma or GNOME but rather Xmonad. I mostly focus on kernel development and related low-level subjects these days. So why would I bother contributing to plasma-nm?"><meta property="og:type" content="article"><meta property="og:url" content="https://binary-eater.github.io/posts/plasma-nm-dev/"><meta property="article:section" content="posts"><meta property="article:published_time" content="2024-02-11T19:55:59-08:00"><meta property="article:modified_time" content="2024-02-11T19:55:59-08:00"></head><body><header class=app-header><a href=https://binary-eater.github.io/><img class=app-header-avatar src=/avatar.jpg alt="Rahul Rameshbabu"></a>
+<span class=app-header-title>Rahul Rameshbabu</span><nav class=app-header-menu><a class=app-header-menu-item href=/>Home</a>
+-
+<a class=app-header-menu-item href=/tags/>Tags</a>
+-
+<a class=app-header-menu-item href=/about/>About</a></nav><p>Binary-Eater: A developer focused on low-level programming</p><div class=app-header-social><a href=https://github.com/Binary-Eater target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github"><title>Github</title><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg>
+</a><a href=https://matrix.to/#/@binary-eater:beater.town target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-message-circle"><title>Matrix</title><path d="M21 11.5a8.38 8.38.0 01-.9 3.8A8.5 8.5.0 0112.5 20a8.38 8.38.0 01-3.8-.9L3 21l1.9-5.7A8.38 8.38.0 014 11.5a8.5 8.5.0 014.7-7.6 8.38 8.38.0 013.8-.9h.5a8.48 8.48.0 018 8v.5z"/></svg></a></div></header><main class=app-container><article class=post><header class=post-header><h1 class=post-title>Speedrunning setting up a plasma-nm development environment</h1><div class=post-meta><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+Feb 11, 2024</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock"><title>clock</title><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+5 min read</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+<a class=tag href=https://binary-eater.github.io/tags/plasma/>plasma</a></div></div></header><div class=post-content><div id=outline-container-headline-1 class=outline-2><h2 id=headline-1>Why did I set up a plasma-nm development environment in the first place?</h2><div id=outline-text-headline-1 class=outline-text-2><div id=outline-container-headline-2 class=outline-3><h3 id=headline-2>Why did I want to contribute changes to plasma-nm?</h3><div id=outline-text-headline-2 class=outline-text-3><p>If you have peaked at my GitHub profile or activity, you probably know a couple of
+things about me.</p><ol><li>I do not use Plasma or GNOME but rather Xmonad.</li><li>I mostly focus on kernel development and related low-level subjects these
+days.</li></ol><p>So why would I bother contributing to <code>plasma-nm</code>? Well, the company that pays
+me for my day job uses Cisco AnyConnect as the VPN solution. From our company's
+IT management perspective, Cisco AnyConnect "supports" Windows, macOS, and
+Linux. The Linux client does not meet our needs, and we need to support FreeBSD
+development as well. We depend heavily on the <a href=https://www.infradead.org/openconnect/>openconnect</a> reverse-engineered
+alternative. The company uses a strict SSO model backed by Microsoft Identity
+Platform services. Support for SSO flows is available through the AnyConnect
+ecosystem through the SAML mechanism, which openconnect has implemented in
+recent years. There are two possible flows/algorithms for the SAML model with
+AnyConnect. One flow involves needing to feed cookies programmatically back into
+<code>libopenconnect</code> for the authentication browser to succeed. The other flow
+involves redirecting a base64 blob that was generated through an authentication
+process done in a browser like Firefox or Chromium back to a localhost server
+run by openconnect for the sake of IPC with the external browser program. While
+the latter flow is much easier to utilize by users with no additional code
+changes required to be used, Cisco limits the external browser flow to newer
+hardware devices in their product model. This means supporting both flows is an
+important task for providing support for a variety of users.</p><p>My personal motivation for adding this support was to empower young college
+students and academics who are interested in developing Linux but need to
+utilize their IT infrastructure in their institutions at the same time. Using
+AnyConnect/GlobalProtect on Linux platforms tends to not be viable for students,
+leading them to depend on <code>openconnect</code>. A number of academic institutions have
+now started enforcing SSO flows for their VPN login flows. Not having the bits
+needed to support the cookie-based SSO authentication flow using <code>plasma-nm</code>
+along with <code>openconnect</code> would be disastrous for students using the Plasma
+environment.</p></div></div><div id=outline-container-headline-3 class=outline-3><h3 id=headline-3>Why not use NixOS like I normally do for working on random projects?</h3><div id=outline-text-headline-3 class=outline-text-3><p>Recapping, the reason I use NixOS is that it empowers me with the ability to
+rapidly work on complex upstream open source projects without needing to waste
+large amounts of time with development environment setup to be able to rebuild
+and use those projects from source. The first two features I authored for adding
+both <a href=https://invent.kde.org/plasma/plasma-nm/-/merge_requests/197>SAML external browser flows</a> and <a href=https://invent.kde.org/plasma/plasma-nm/-/merge_requests/208>SAML built-in browser flows</a> for <code>plasma-nm</code>
+were actually tested on NixOS, where I was able to work on these features
+without spending much time due to how quickly NixOS let me test my <code>plasma-nm</code>
+tree with zero manual setup work. I just passed a pointer to my local
+<code>plasma-nm</code> tree, and NixOS took care of the rest for letting me test my
+<code>plasma-nm</code> changes. I do not like MIS-type problems, which I feel NixOS
+eliminates in a lot of cases.</p><p>The reason I did not continue using NixOS for <code>plasma-nm</code> development is that
+NixOS will base its dependencies off of released versions. With the Plasma 5.27
+freeze to focus on the Plasma 6 efforts, the upstream codebase for Plasma
+components and frameworks heavily diverged from the 5.27 release components. To
+be able to get an upstream version of plasma-nm compatible with NixOS, I would
+need to rebuild a lot of dependencies from source. This is something that I did
+not want to burn time on. Recently, there has been work on a <a href="https://github.com/nix-community/kde2nix?tab=readme-ov-file">kde2nix</a> packaging
+(which has now been upstreamed), but I was always running into cache misses,
+etc., and saw a lot of rebuilding from source.</p></div></div></div></div><div id=outline-container-headline-4 class=outline-2><h2 id=headline-4>Shortcutting the work needed to get a plasma-nm development environment</h2><div id=outline-text-headline-4 class=outline-text-2><p>Now, it's time to speedrun getting a <code>plasma-nm</code> development environment.</p><ol><li>Install the <a href=https://neon.kde.org/download>KDE Neon Developer Edition image</a> (likely something like Arch
+Linux can work as well)</li><li>Set up <code>kdesrc-build</code> using the <a href=https://community.kde.org/Get_Involved/development>wiki guide</a> (<strong><strong>NOTE:</strong></strong> <code>kde-builder</code> is a
+drop-in replacement for <code>kdesrc-build</code> that is being tested at the time of
+writing this article)</li><li><a href=https://community.kde.org/Get_Involved/development/Set_up_a_development_environment>Set up a development environment with kdesrc-build or kde-builder</a></li><li><a href=https://community.kde.org/Get_Involved/development/Build_software_with_kdesrc-build>Build software with kdesrc-build</a></li><li>The examples shown in the guide in step 4 all use <code>kdesrc-run</code> with very
+isolated GUI programs. You will likely notice that <code>plasma-nm</code> cannot be
+tested the same way.</li><li>We will do <code>kdesrc-build plasma-nm</code> to build all the <code>plasma-nm</code> KDE
+frameworks dependencies. I actually just note the dependencies manually and
+<code>kdesrc-build</code> each one, but that involves reading the CMake files in the
+<code>plasma-nm</code> project. The point of this article is speedrunning getting
+started with <code>plasma-nm</code> development.</li><li>In a directory outside the <code>~/kde</code> directory, <code>git clone
+https://invent.kde.org/plasma/plasma-nm.git && cd plasma-nm</code></li><li><code>mkdir build</code></li><li><code>cd build</code></li><li><code>cmake ../ -DCMAKE_FIND_ROOT_PATH=~/kde/ -DCMAKE_INSTALL_PREFIX=/usr [-DDISABLE_MODEMMANAGER_SUPPORT=true]</code></li><li><code>make</code></li><li><code>sudo make install</code></li><li>Restart the plasma shell for the new <code>plasma-nm</code> instance to be loaded (I
+login-logout as my mindless speedrunning solution).</li></ol><p>The big thing to notice is that my testing flow is heavily based on the
+<a href=https://invent.kde.org/plasma/plasma-nm/-/blob/master/README.md>plasma-nm README</a>. The main thing I did was simplify handling the dependencies
+using <code>kdesrc-build</code>. I originally considered compiling and installing all the
+KDE frameworks dependencies and transitive dependencies by hand. It proved to be
+overwhelming. Instead, I depend on <code>kdesrc-build</code> to do this on my behalf and
+use <code>-DCMAKE_FIND_ROOT_PATH=~/kde/</code> to let CMake lookup the pre-builts of the
+KDE frameworks dependencies made by <code>kdesrc-build</code>.</p></div></div></div><div class=post-footer></div></article></main></body></html>
