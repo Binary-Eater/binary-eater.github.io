@@ -1,0 +1,535 @@
+---
+title: "Setting up a minimal git server to support Microsoft SSO using OIDC"
+tags: ["git"]
+date: 2024-02-19T08:29:43-08:00
+draft: false
+---
+
+* Prerequisites
+
+This tutorial is less about how to get a bare git server up and running on XYZ
+ecosystem and more about taking an existing setup and providing SSO
+authentication support to it for git over HTTP usage. While the tutorial will
+target Microsoft's SSO offerings, the concepts discussed can be re-applied to
+any OIDC identity provider. My recommendation is to first work with a tutorial
+that helps you get a basic cgit setup up and running, which you are able to
+clone from. After that, this tutorial should be easy to follow along.
+
+** Server
+
++ [[https://github.com/oauth2-proxy/oauth2-proxy][oauth2-proxy]]
++ Apache + [[https://git.zx2c4.com/cgit/][cgit]]
++ SSL certificate + key (I used Let's Encrypt to quickly acquisition one for
+  testing)
++ Access to making a Microsoft Entra ID application at [[portal.azure.com]] (or use
+  of an alternative OIDC identity provider)
+
+** Client
+
++ ~git~
++ A python install that supports [[https://github.com/AzureAD/microsoft-authentication-library-for-python][msal-python]]
++ The ~msal-git-helper.py~ script in [[https://github.com/Binary-Eater/git-credential-msal][Binary-Eater/git-credential-msal]]
+
+* Core concepts
+
+If the prerequistes for making this flow work seemed reasonable, lets go over
+some core concepts required to properly understand the authentication flow. This
+will be important for understanding both the capabilities and limitations of
+this flow as well as how to potentially apply this tutorial for OIDC providers
+aside from Microsoft.
+
+** OIDC vs OAuth2
+
+If you are looking into supporting SSO flows for your git server, you probably
+have run into the terms OpenID Connect (OIDC) and OAuth2. Lets delve a bit into
+each and what they have to offer.
+
+*** OAuth2
+
+OAuth2 is an authorization protocol. What this means is that the OAuth2 flow
+grants a user access to resources the identity provider offers. This flow does
+not provide any way of validating the identity of the person using the result
+that grants access to the identity provider's resources. What this means is that
+the result cannot be used by a third party to identify that an individual is a
+trusted party by the identity provider. Only the identity provider can identify
+this.
+
+*** OpenID Connect (OIDC)
+
+OIDC is an extension to the OAuth2 protocol. OAuth2 is limited in that the
+result/tokens that are provided at the end of the flow cannot be used by a third
+party to validate that the user is indeed a trusted party by the identity
+platform. OIDC describes logic that enables third parties to be able to validate
+that a user is indeed a trusted party by the identity platform. This extension
+is critical for making this git flow work as illustrated by the diagrams below.
+
+#+BEGIN_SRC
+
+
+
+                                                                     ┌───────────────────────────────────────┐
+                                                                     │                                       │
+                                                                     │                                       │
+                          OAuth2 authorization request               │                                       │
+             ┌──────────────────────────────────────────────────────►│        OAuth2 Identity Platform       │
+             │                                                       │                                       │
+             │                                                       │                                       │
+             │                                                       │                                       │
+             │                    OAuth2 authorization response      │                                       │
+             │        ┌──────────────────────────────────────────────┤                                       │
+             │        │                                              │                                       │
+             │        │                                              │             with services             │
+             │        │                                              │                                       │
+             │        │                                              │                                       │
+             │        │                                              │                                       │
+             │        │                                              │                                       │
+             │        ▼                                              └───────────────────────────────────────┘
+     ┌───────┴──────────────┐
+     │                      │
+     │                      │
+     │                      │                                                                                                        1st stage
+     │      git client      │  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     │                      │                                                                                                        2nd stage
+     │                      │
+     │                      │
+     └──────────┬───────────┘
+                │
+                │
+                │
+                │                                                    ┌─────────────────────────────────────────────────────────────────────────┐
+                │                                                    │                                                                         │
+                │                                                    │  Git service                                           ┌──────────────┐ │
+                │                                                    │                                                        │              │ │
+                │                                                    │                                                        │    Access    │ │
+                │                                                    │                                                        │              │ │
+                │                                                    │                      ┌───────────────────────────────► │    denied    │ │
+                │                                                    │                      │                                 │              │ │
+                │                                                    │                      │                                 │      401     │ │
+                │                                                    │                      │                                 │              │ │
+                │                                                    │                      │                                 └──────────────┘ │
+                │                                                    │                      │                                                  │
+                │                                                    │  ┌───────────────────┴───┐                    ┌───────────────────────┐ │
+                │                                                    │  │                       │                    │                       │ │
+                │                                                    │  │                       │                    │                       │ │
+                │                                                    │  │                       │                    │    Apache instance    │ │
+                │                                                    │  │                       │                    │                       │ │
+                │          Forwarding authorization resource         │  │                       │                    │                       │ │
+                └────────────────────────────────────────────────────┼─►│     oauth2-proxy      ├───xxxxxxxxxxxxxx──►│                       │ │
+                            (Cannot be used by oauth2-proxy)         │  │                       │                    │                       │ │
+                                                                     │  │                       │                    │     serving cgit      │ │
+                                                                     │  │                       │                    │                       │ │
+                                                                     │  │                       │                    │                       │ │
+                                                                     │  └───────────────────────┘                    └───────────────────────┘ │
+                                                                     │                                                                         │
+                                                                     │                                                                         │
+                                                                     └─────────────────────────────────────────────────────────────────────────┘
+
+
+
+#+END_SRC
+
+The diagram above illustrates the ~oauth2-proxy~ instances in-ability to
+validate the identity of the git client user because the git client did an
+OAuth2 flow with the Microsoft identity provider. The problem is that only the
+Microsoft platform has the ability to validate the issued result and the
+oauth2-proxy has no means of checking it against the Microsoft identity
+provider.
+
+Now lets take a look at the variant with OpenID Connect.
+
+#+BEGIN_SRC
+
+
+
+                                                                   ┌───────────────────────────────────────┐
+                                                                   │                                       │
+                                                                   │                                       │
+                        OAuth2 authorization request               │                                       │
+           ┌──────────────────────────────────────────────────────►│         OIDC Identity Platform        │
+           │                                                       │                                       │
+           │                                                       │                                       │
+           │                                                       │                                       │
+           │                    OAuth2 authorization response      │                                       │
+           │        ┌──────────────────────────────────────────────┤                                       │
+           │        │                                              │                                       │
+           │        │                                              │             with services             │
+           │        │                                              │                                       │
+           │        │                                              │                                       │
+           │        │                                              │                                       │
+           │        │                                              │                                       │
+           │        ▼                                              └───────────────────────────────────────┘
+   ┌───────┴──────────────┐                                                   ▲
+   │                      │                                                   │      │
+   │                      │                                ┌──────────────────┘      │
+   │                      │                                │                         │                                             1st stage
+   │      git client      │  ──────────────────────────────┼─────────────────────────┼────────────────────────────────────────────────────────
+   │                      │                                │                         │                                             2nd stage
+   │                      │                                │               1st stage │ 2nd stage
+   │                      │                                │                         │
+   └──────────┬───────────┘                                │                         │
+              │                                            │                         │
+              │                                            │                         │
+              │                                      Query │                         │
+              │          /.well-known/openid-configuration │       ┌─────────────────┼───────────────────────────────────────────────────────┐
+              │                      for identity resource │       │                 │                                                       │
+              │                     signature verification │       │  Git service    │                                      ┌──────────────┐ │
+              │                                            │       │                 │                                      │              │ │
+              │                                            │       │                 │                                      │    Access    │ │
+              │                                            │       │                 │                                      │              │ │
+              │                                            │       │                 │    ┌───────────────────────────────► │    denied    │ │
+              │                                            │       │                 │    │                                 │              │ │
+              │                                            │       │                 │    │                                 │      401     │ │
+              │                                            │       │                 │    │                                 │              │ │
+              │                                            │       │                 │    │                                 └──────────────┘ │
+              │                                            │       │                      │                                                  │
+              │                                            │       │  ┌───────────────────┴───┐                    ┌───────────────────────┐ │
+              │                                            │       │  │                       │                    │                       │ │
+              │                                            └───────┼──┤                       │                    │                       │ │
+              │                                                    │  │                       │                    │    Apache instance    │ │
+              │                                                    │  │                       │                    │                       │ │
+              │          Forwarding identity resource              │  │                       │                    │                       │ │
+              └────────────────────────────────────────────────────┼─►│     oauth2-proxy      ├───────────────────►│                       │ │
+                         (oauth2-proxy will check it against       │  │                       │                    │                       │ │
+                            the OIDC provider)                     │  │                       │                    │     serving cgit      │ │
+                                                                   │  │                       │                    │                       │ │
+                                                                   │  │                       │                    │                       │ │
+                                                                   │  └───────────────────────┘                    └───────────────────────┘ │
+                                                                   │                                                                         │
+                                                                   │                                                                         │
+                                                                   └─────────────────────────────────────────────────────────────────────────┘
+
+
+
+#+END_SRC
+
+We can see in this diagram that OIDC provides a mechanism for third party groups
+to be able to validate identity resources issued from identity providers to
+client applications. This enables third-party services like the git server not
+owned by the identity provider to be able to grant access to users authenticated
+against the trusted identity platform.
+
+**NOTE:** although the project is called ~oauth2-proxy~, it can handle OpenID
+Connect flows.
+
+** OIDC token types
+
+There are three core token types in the OIDC protocol.
+
++ Access tokens
++ Refresh tokens
++ Id tokens
+
+Access tokens and refresh tokens are concepts that are inherited from OAuth2.
+They are related to authorization. The access token grants a client application
+the appropriate resources owned by the identity provider. The refresh token
+allows the client to request a new access token without needing to go through
+the original dance for acquiring the first pair of tokens. There is no well
+defined mechanism for a third party application not owned by the identity
+provider to validate an access token acquisitioned by a different client
+application There is no well defined mechanism for a third party application not
+owned by the identity provider to validate an access token acquisitioned by a
+different client application. In the context of this article, that means our git
+server has no concrete way to validate the access token retrieved by the git
+client through the SSO dance.
+
+Id tokens are unique to OIDC. They are designed such that a client application
+such as a web browser or a git client can store the token from doing an OIDC
+provider dance and use this token to authenticate across different applications
+such as various third-party web pages or git servers. These Id tokens are JWTs
+where the signature can be checked against the OIDC provider (part of the OpenID
+Connect protocol).
+
+If you are interested in a more in-depth comparison of Id tokens vs access
+tokens, Auth0 has a nice [[https://auth0.com/blog/id-token-access-token-what-is-the-difference/][blog post]] on this.
+
+* Reconfiguring the git server for OIDC flows with Microsoft
+
+Now that we understand the core architecture needed to achieve an SSO flow using
+OIDC, lets take a look at how to configure the git server.
+
+The first thing we will want to do is restrict our Apache instance to only be
+accessible locally on the server. We do this since ~oauth2-proxy~ should be the
+world facing service that redirects requests to our hidden Apache instance.
+
+In ~/etc/apache2/apache2.conf~, I set ~LimitRequestFieldSize~ to a fairly large
+value.
+
+#+BEGIN_SRC
+# Global configuration
+#
+LimitRequestFieldSize 500000
+#+END_SRC
+
+This value can be tuned, but basically ~oauth2-proxy~ forwards large request
+headers to the Apache2 instance. I mostly wanted to focus on getting a
+proof-of-concept working.
+
+I reduce ~/etc/apache2/ports.conf~ to the following.
+
+#+BEGIN_SRC
+# If you just change the port or add more ports here, you will likely also
+# have to change the VirtualHost statement in
+# /etc/apache2/sites-enabled/000-default.conf
+
+#Listen 80
+
+#<IfModule ssl_module>
+	#Listen 443
+#</IfModule>
+#
+#<IfModule mod_gnutls.c>
+	#Listen 443
+#</IfModule>
+
+Listen 127.0.0.1:8080
+
+# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+#+END_SRC
+
+My configuration for cgit under ~/etc/apache2/sites-available/cgit.conf~.
+
+#+BEGIN_SRC
+<VirtualHost 127.0.0.1:8080>
+    ServerName git.beater.town
+    DocumentRoot /var/www/htdocs/cgit
+
+    <Directory "/var/www/htdocs/cgit/">
+        AllowOverride None
+        Options +ExecCGI
+        Order allow,deny
+        Allow from all
+    </Directory>
+
+    Alias /cgit.css /var/www/htdocs/cgit/cgit.css
+    Alias /cgit.png /var/www/htdocs/cgit/cgit.png
+    ScriptAlias / /var/www/htdocs/cgit/cgit.cgi/
+</VirtualHost>
+#+END_SRC
+
+These configs might need to be tuned based on personal needs or how the instance
+of ~cgit~ was installed.
+
+Lets create a suitable Microsoft Entra ID application at [[https://portal.azure.com][portal.azure.com]] that
+can be utilized by both git clients and the ~oauth2-proxy~ instance.
+
+The key things to take away from the langing page are the client id and tenant
+id (which are public values/safe to expose). The link to the client credentials
+will also be useful for the next step.
+
+#+ATTR_HTML: :width 100%
+[[./entra_app_langing_page.png]]
+
+Now, we will want to create a client secret that will be consumed by
+~oauth2-proxy~. This value cannot safely be exposed, unlike the client id or
+tenant id. We will not be sharing this with git clients connect to the git
+server.
+
+#+ATTR_HTML: :width 100%
+[[./entra_app_client_secret.png]]
+
+We will want to make sure we have the needed scopes for our OIDC Id token to
+function as expected.
+
+#+ATTR_HTML: :width 100%
+[[./entra_app_scopes.png]]
+
+We need to configure redirect URIs for forwarding the OIDC tokens back to the
+requesting application. We will need one redirect URI for ~oauth2-proxy~ and
+another localhost one for git clients. The reason why exposing the client id and
+tenant id is alright is due to these restrictions in the redirect URIs.
+
+#+ATTR_HTML: :width 100%
+[[./entra_app_redirect_uris.png]]
+
+We need to make sure various authentication flows will indeed generate an OIDC
+Id token. We also need the Entra Id application to support public client flows,
+so ~git~ users do not need a client secret to engage the OIDC flow.
+
+#+ATTR_HTML: :width 80%
+[[./entra_app_authentication.png]]
+
+Theoretically, this next change should not be needed, but I do it just to be
+certain that future change in Microsoft services does not randomly take down my
+git service's HTTP authentication. I change ~"accessTokenAcceptedVersion": null~
+to ~"accessTokenAcceptedVersion": 2~. Does has to do with controlling the format
+and issuer source of the OIDC Id token from Microsoft Entra ID services. Version
+2 is the latest and should be issued by default. However, I want to guarantee
+this and not let a v3 rollout break my application, so I enforce the version in
+the manifest.
+
+#+ATTR_HTML: :width 80%
+[[./entra_app_manifest.png]]
+
+Next, we will get ~oauth2-proxy~ running with the needed configuration flow.
+This part is fairly easy thanks to the great work done by the project
+contributors.
+
+#+BEGIN_SRC
+## OAuth2 Proxy Config File
+## https://github.com/oauth2-proxy/oauth2-proxy
+
+## <addr>:<port> to listen on for HTTP/HTTPS clients
+# http_address = "127.0.0.1:4180"
+https_address = ":443"
+force_https = true
+
+## Are we running behind a reverse proxy? Will not accept headers like X-Real-Ip unless this is set.
+# reverse_proxy = true
+
+## TLS Settings
+tls_cert_file = "/path/to/fullchain.pem"
+tls_key_file = "/path/to/privkey.pem"
+
+## the OAuth Redirect URL.
+# defaults to the "https://" + requested host header + "/oauth2/callback"
+redirect_url = "https://git.beater.town/oauth2/callback"
+
+## the http url(s) of the upstream endpoint. If multiple, routing is based on path
+upstreams = [
+    "http://127.0.0.1:8080/"
+]
+
+## only using a single provider
+skip_provider_button = true
+
+## Logging configuration
+#logging_filename = ""
+#logging_max_size = 100
+#logging_max_age = 7
+#logging_local_time = true
+#logging_compress = false
+#standard_logging = true
+#standard_logging_format = "[{{.Timestamp}}] [{{.File}}] {{.Message}}"
+#request_logging = true
+#request_logging_format = "{{.Client}} - {{.Username}} [{{.Timestamp}}] {{.Host}} {{.RequestMethod}} {{.Upstream}} {{.RequestURI}} {{.Protocol}} {{.UserAgent}} {{.StatusCode}} {{.ResponseSize}} {{.RequestDuration}}"
+#auth_logging = true
+#auth_logging_format = "{{.Client}} - {{.Username}} [{{.Timestamp}}] [{{.Status}}] {{.Message}}"
+
+## pass HTTP Basic Auth, X-Forwarded-User and X-Forwarded-Email information to upstream
+# pass_basic_auth = true
+pass_user_headers = true
+## pass the request Host Header to upstream
+## when disabled the upstream Host is used as the Host Header
+# pass_host_header = true
+
+## Email Domains to allow authentication for (this authorizes any email on this domain)
+## for more granular authorization use `authenticated_emails_file`
+## To authorize any email addresses use "*"
+email_domains = [
+    "*"
+]
+
+## The OAuth Client ID, Secret
+# client_id = "123456.apps.googleusercontent.com"
+# client_secret = ""
+
+## Pass OAuth Access token to upstream via "X-Forwarded-Access-Token"
+# pass_access_token = false
+
+## Authenticated Email Addresses File (one email per line)
+# authenticated_emails_file = ""
+
+## Htpasswd File (optional)
+## Additionally authenticate against a htpasswd file. Entries must be created with "htpasswd -B" for bcrypt encryption
+## enabling exposes a username/login signin form
+# htpasswd_file = ""
+
+## bypass authentication for requests that match the method & path. Format: method=path_regex OR path_regex alone for all methods
+# skip_auth_routes = [
+#   "GET=^/probe",
+#   "^/metrics"
+# ]
+
+## mark paths as API routes to get HTTP Status code 401 instead of redirect to login page
+api_routes = [
+    ".*/.*\\.git.*"
+]
+
+## Templates
+## optional directory with custom sign_in.html and error.html
+# custom_templates_dir = ""
+
+## skip SSL checking for HTTPS requests
+# ssl_insecure_skip_verify = false
+
+
+## Cookie Settings
+## Name     - the cookie name
+## Secret   - the seed string for secure cookies; should be 16, 24, or 32 bytes
+##            for use with an AES cipher when cookie_refresh or pass_access_token
+##            is set
+## Domain   - (optional) cookie domain to force cookies to (ie: .yourcompany.com)
+## Expire   - (duration) expire timeframe for cookie
+## Refresh  - (duration) refresh the cookie when duration has elapsed after cookie was initially set.
+##            Should be less than cookie_expire; set to 0 to disable.
+##            On refresh, OAuth token is re-validated.
+##            (ie: 1h means tokens are refreshed on request 1hr+ after it was set)
+## Secure   - secure cookies are only sent by the browser of a HTTPS connection (recommended)
+## HttpOnly - httponly cookies are not readable by javascript (recommended)
+cookie_name = "_oauth2_proxy"
+cookie_secret = "<redacted secret. Look at oauth2-proxy docs on how to generate/handle>"
+# cookie_domains = ""
+# cookie_expire = "168h"
+# cookie_refresh = ""
+cookie_secure = true
+# cookie_httponly = true
+
+## Microsoft Identity Platform OIDC Settings
+provider = "oidc"
+oidc_issuer_url = "https://login.microsoftonline.com/43083d15-7273-40c1-b7db-39efd9ccc17a/v2.0"
+login_url = "https://login.microsoftonline.com/43083d15-7273-40c1-b7db-39efd9ccc17a/oauth2/v2.0/authorize"
+redeem_url = "https://login.microsoftonline.com/43083d15-7273-40c1-b7db-39efd9ccc17a/oauth2/v2.0/token"
+user_id_claim = "email"
+oidc_email_claim = "sub"
+scope = "openid"
+client_id = "b43992a4-daed-4b37-879c-9516052e797a"
+client_secret = "<redacted secret>"
+skip_jwt_bearer_tokens = true
+#+END_SRC
+
+The invocation for this simply becomes ~oauth2-proxy --config
+/path/to/oauth2-proxy.cfg~. In my case, I store the file under ~/etc~, but I am
+sure there are better choices.
+
+We can further use options like ~pass_user_headers~ to do authorization checks
+behind the ~oauth2-proxy~ instance, limiting the valid users permitted to use
+the git server to a limited group.
+
+* Setting up the git client to authenticate against the server using SSO
+
+Unfortunately, ~git~ today does not let credential helper programs inject HTTP
+headers. In this instance, we need to inject an ~Authorization~ header with the
+OIDC Id token for authentication to work. ~git~ today does have a configuration
+for extra HTTP headers. We can take advantage of that to make this
+authentication scheme work.
+
+We will utilize the ~msal-git-helper.py~ script in
+[[https://github.com/Binary-Eater/git-credential-msal][Binary-Eater/git-credential-msal]] to accomplish this since the flow for
+programmatically extracting an OIDC Id token from the Microsoft authentication
+flow is not well documented (while the access token and refresh token are
+cleanly presented in their APIs).
+
+The invocation looks like the following.
+
+#+BEGIN_SRC
+git -c http.extraHeader="Authorization: Bearer $(python3 /path/to/msal-git-helper.py <client_id> <tenant_id>)" clone <repository_http_url>
+#+END_SRC
+
+For the instance I have set up, my invocation looks like the following.
+
+#+BEGIN_SRC
+git -c http.extraHeader="Authorization: Bearer $(python3 /path/to/msal-git-helper.py b43992a4-daed-4b37-879c-9516052e797a 43083d15-7273-40c1-b7db-39efd9ccc17a)" clone https://git.beater.town/my-project.git
+#+END_SRC
+
+* Afterword
+
+Overall, we take the same OIDC scheme used to make browser authentication flows
+work across different web applications. The ~git~ client user is analogous to
+the browser and the configured git servers are analogous to the web
+applications.
+
+You may have noticed I named the repository ~git-credential-msal~ even though
+the program contained in this repository is not a git-credential-helper program.
+My next steps will be posting patches for ~git~ to properly support accepting
+HTTP headers for credential helper programs. Once accepted, I can make a proper
+credential helper for this flow.
