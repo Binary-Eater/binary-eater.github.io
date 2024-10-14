@@ -1,0 +1,200 @@
+---
+title: "Learning how to use ftrace with the NVIDIA SHIELD controller"
+tags: ["kernel"]
+date: 2024-10-13T16:27:16-07:00
+draft: true
+---
+
+~ 
+❯ ps aux | grep 26964
+root       26964  0.0  0.0  13136  8548 ?        Ss   15:04   0:00 /nix/store/4jk7imhlawwja56kdvqwiiznjv19zv91-bluez-5.75/libexec/bluetooth/bluetoothd -f /etc/bluetooth/main.conf
+binary-+   54533  0.0  0.0   6676  2636 pts/5    S+   16:38   0:00 grep 26964
+
+* What is ftrace?
+
+~ftrace~ is short for "function tracer", however it has collected a number of
+tracing tools over the years that take it beyond just function tracing. The goal
+of ftrace is to give insight into what is happening inside the kernel when one
+does not know where to begin looking. The [[https://docs.kernel.org/trace/ftrace.html][kernel documentation]] for ~ftrace~ does
+a good job explaining the interface, but there are a couple gotchas that are
+tricky to figure out while first using the tooling. The goal of this guide is to
+help work through those gotchas while demonstrating an example of tracing
+interactions with a simple device such as a game controller. In this post, I
+will be using the NVIDIA SHIELD game controller.
+
+* A quick reference of the various tracing tools offered by ftrace
+
+This post will primarily cover the actual function tracing capabilities of
+~ftrace~, but I quickly wanted to call out that there are a number of tracers
+available for ~ftrace~ currently. Some of the core ideas involved with using
+function tracing will be applicable to the other tracers as well.
+
+Here is an example of how to list the tracers that are available on the current
+system. This list varies based on kernel configuration options and therefore is
+not exhaustive of every tracer that is implemented in the kernel source tree.
+
+#+BEGIN_SRC shell
+  [root@BINARY-EATER-DEV:~]# cat /sys/kernel/tracing/available_tracers
+  blk function_graph wakeup_dl wakeup_rt wakeup function nop
+#+END_SRC
+
+More details about all the possible tracers that can be used can be found in the
+[[https://docs.kernel.org/trace/ftrace.html#the-tracers][kernel documentation]].
+
+* Lets trace input and haptics for the NVIDIA SHIELD game controller
+
+There is a nice userspace utility called ~fftest~ that is part of the
+[[https://sourceforge.net/projects/linuxconsole/][linuxconsole tools]] suite. This utility exercises evdev device nodes,
+~/dev/input/eventXX~, that advertise ~FF_*~ device capabilities. Using this
+simple tool helps create a contained ~ftrace~ experiment without too much
+complexity involved. More details on the kernel force feedback interface can be
+found in the [[https://docs.kernel.org/input/ff.html][kernel documentation]].
+
+** A quick illustration of how fftest works.
+
+First, we can use ~udevadm monitor~ to determine which evdev device node is
+enumerated for the controller. We could also disconnect the controller and
+reconnect it over bluetooth and figure out the newly enumerated evdev device
+nodes.
+
+#+BEGIN_SRC shell
+  # Terminal 2
+  ~ took 3s 
+  ❯ udevadm monitor
+  monitor will print the received events for:
+  UDEV - the event which udev sends out after rule processing
+  KERNEL - the kernel uevent
+
+  KERNEL[19659.624082] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1 (usb)
+  KERNEL[19659.627579] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0 (usb)
+  KERNEL[19659.801867] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A (hid)
+  KERNEL[19659.802076] add      /devices/virtual/input/input41 (input)
+  KERNEL[19659.802262] add      /devices/virtual/input/input41/event25 (input)
+  KERNEL[19659.802298] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/power_supply/thunderstrike_1/wakeup86 (wakeup)
+  KERNEL[19659.802317] add      /devices/virtual/thermal/thermal_zone11 (thermal)
+  KERNEL[19659.802346] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/power_supply/thunderstrike_1/hwmon12 (hwmon)
+  KERNEL[19659.802370] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/leds/thunderstrike1:blue:led (leds)
+  KERNEL[19659.802567] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/input/input42 (input)
+  UDEV  [19659.802583] add      /devices/virtual/thermal/thermal_zone11 (thermal)
+  UDEV  [19659.802634] add      /devices/virtual/input/input41 (input)
+  UDEV  [19659.813255] add      /devices/virtual/input/input41/event25 (input)
+  KERNEL[19659.854249] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/input/input42/event26 (input)
+  KERNEL[19659.854394] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/input/input42/js1 (input)
+  KERNEL[19659.854425] bind     /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A (hid)
+  KERNEL[19659.854441] bind     /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0 (usb)
+  KERNEL[19659.854456] bind     /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1 (usb)
+  UDEV  [19659.857267] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1 (usb)
+  UDEV  [19659.858701] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0 (usb)
+  UDEV  [19659.860192] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A (hid)
+  KERNEL[19659.861185] change   /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/power_supply/thunderstrike_1 (power_supply)
+  UDEV  [19659.861671] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/power_supply/thunderstrike_1/wakeup86 (wakeup)
+  UDEV  [19659.861957] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/leds/thunderstrike1:blue:led (leds)
+  UDEV  [19659.861997] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/power_supply/thunderstrike_1/hwmon12 (hwmon)
+  UDEV  [19659.863024] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/input/input42 (input)
+  UDEV  [19659.866203] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/input/input42/js1 (input)
+  UDEV  [19659.879693] add      /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/input/input42/event26 (input)
+  UDEV  [19659.880105] bind     /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A (hid)
+  UDEV  [19659.880565] bind     /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0 (usb)
+  UDEV  [19659.882104] bind     /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1 (usb)
+  UDEV  [19659.882516] change   /devices/pci0000:00/0000:00:14.0/usb3/3-4/3-4.1/3-4.1:1.0/0003:0955:7214.000A/power_supply/thunderstrike_1 (power_supply)
+  KERNEL[19662.193224] remove   /devices/pci0000:00/0000:00:14.0/usb3/3-14/3-14:1.0/bluetooth/hci0/hci0:256 (bluetooth)
+  UDEV  [19662.207497] remove   /devices/pci0000:00/0000:00:14.0/usb3/3-14/3-14:1.0/bluetooth/hci0/hci0:256 (bluetooth)
+  KERNEL[19662.526947] add      /devices/pci0000:00/0000:00:14.0/usb3/3-14/3-14:1.0/bluetooth/hci0/hci0:512 (bluetooth)
+  UDEV  [19662.527687] add      /devices/pci0000:00/0000:00:14.0/usb3/3-14/3-14:1.0/bluetooth/hci0/hci0:512 (bluetooth) 
+#+END_SRC
+
+Now, lets use ~fftest~ on ~/dev/input/event25~ (determined from ~udevadm
+monitor~ output) to test force feedback support.
+
+#+BEGIN_SRC shell
+  ~ via ❄️  impure (shell) took 5m15s 
+  ❯ sudo fftest /dev/input/event25
+  Place your right index finger on the fingerprint reader
+  Force feedback test program.
+  HOLD FIRMLY YOUR WHEEL OR JOYSTICK TO PREVENT DAMAGES
+  
+  Device /dev/input/event25 opened
+  Features:
+    * Absolute axes: 
+      [00 00 00 00 00 00 00 00 ]
+    * Relative axes: 
+      [00 00 ]
+    * Force feedback effects types: Periodic, Rumble, Gain, 
+      Force feedback periodic effects: Square, Triangle, Sine, 
+      [00 00 00 00 00 00 00 00 00 00 03 07 01 00 00 00 ]
+    * Number of simultaneous effects: 16
+  
+  Setting master gain to 75% ... OK
+  Uploading effect #0 (Periodic sinusoidal) ... OK (id 0)
+  Uploading effect #1 (Constant) ... Error: Invalid argument
+  Uploading effect #2 (Spring) ... Error: Invalid argument
+  Uploading effect #3 (Damper) ... Error: Invalid argument
+  Uploading effect #4 (Strong rumble, with heavy motor) ... OK (id 1)
+  Uploading effect #5 (Weak rumble, with light motor) ... OK (id 2)
+  Enter effect number, -1 to exit
+  0
+  Now Playing: Sine vibration
+  Enter effect number, -1 to exit
+  4
+  Now Playing: Strong Rumble
+  Enter effect number, -1 to exit
+  5
+  Now Playing: Weak Rumble
+  Enter effect number, -1 to exit
+  -1
+  Stopping effects
+#+END_SRC
+
+** Lets start tracing
+
+Now that we have our userspace program for doing some action, lets begin tracing
+the related kernel logic.
+
+First, there are two function trace modes for ~ftrace~, ~function~ and
+~function_graph~. Lets briefly talk about each.
+
+The ~function~ tracer mode provides a summary for functions called in by the
+kernel.
+
+#+BEGIN_SRC shell
+  # tracer: function
+  #
+  # entries-in-buffer/entries-written: 819865/5876450   #P:16
+  #
+  #                                _-----=> irqs-off/BH-disabled
+  #                               / _----=> need-resched
+  #                              | / _---=> hardirq/softirq
+  #                              || / _--=> preempt-depth
+  #                              ||| / _-=> migrate-disable
+  #                              |||| /     delay
+  #           TASK-PID     CPU#  |||||  TIMESTAMP  FUNCTION
+  #              | |         |   |||||     |         |
+            <idle>-0       [011] dNh5.  2211.522631: _raw_spin_unlock_irqrestore <-__wake_up
+            <idle>-0       [011] dNh4.  2211.522632: __rcu_read_unlock <-evdev_events
+            <idle>-0       [011] dNh4.  2211.522632: __rcu_read_unlock <-input_pass_values
+            <idle>-0       [011] dNh4.  2211.522632: _raw_spin_unlock_irqrestore <-atkbd_receive_byte
+            <idle>-0       [011] dNh3.  2211.522633: _raw_spin_unlock_irqrestore <-serio_interrupt
+            <idle>-0       [011] dNh2.  2211.522633: add_interrupt_randomness <-handle_irq_event
+            <idle>-0       [011] dNh2.  2211.522633: fast_mix <-add_interrupt_randomness
+            <idle>-0       [011] dNh2.  2211.522634: note_interrupt <-handle_irq_event
+            <idle>-0       [011] dNh2.  2211.522634: _raw_spin_lock <-handle_irq_event
+            <idle>-0       [011] dNh3.  2211.522634: _raw_spin_unlock <-__common_interrupt
+            <idle>-0       [011] dNh2.  2211.522635: irq_exit_rcu <-common_interrupt
+            <idle>-0       [011] dNh2.  2211.522635: irqtime_account_irq <-__irq_exit_rcu
+            <idle>-0       [011] dN.2.  2211.522635: handle_softirqs <-__irq_exit_rcu
+            <idle>-0       [011] dNs2.  2211.522636: irqtime_account_irq <-handle_softirqs
+            <idle>-0       [011] .Ns2.  2211.522636: tasklet_action <-handle_softirqs
+            <idle>-0       [011] .Ns2.  2211.522636: workqueue_softirq_action <-tasklet_action
+            <idle>-0       [011] .Ns2.  2211.522637: tasklet_action_common.isra.0 <-handle_softirqs
+            <idle>-0       [011] .Ns2.  2211.522638: tasklet_clear_sched <-tasklet_action_common.isra.0
+            <idle>-0       [011] .Ns2.  2211.522638: wake_up_var <-tasklet_clear_sched
+            <idle>-0       [011] .Ns2.  2211.522638: kbd_bh <-tasklet_action_common.isra.0
+            <idle>-0       [011] .Ns2.  2211.522639: _raw_spin_lock_irqsave <-kbd_bh
+            <idle>-0       [011] dNs3.  2211.522639: _raw_spin_unlock_irqrestore <-kbd_bh
+#+END_SRC
+
+# TODO explain output
+
+#+BEGIN_SRC shell
+
+#+END_SRC
