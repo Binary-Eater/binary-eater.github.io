@@ -193,7 +193,61 @@ kernel.
             <idle>-0       [011] dNs3.  2211.522639: _raw_spin_unlock_irqrestore <-kbd_bh
 #+END_SRC
 
-# TODO explain output
+Lets quickly go over what each of the columns in the ~function~ tracer output
+mean. The ~TASK~ field is the name of the process and it is concatenated with
+the PID. ~CPU#~ refers to which core the kernel function executed on. ~irqs-off~
+indicates whether interrupts are disabled. ~d~ means disabled and ~.~ means
+enabled. ~need-resched~ indicates whether ~schedule()~ will need to be called
+after a given task/routine. ~N~ would indicate that both ~TIF_NEED_RESCHED~ and
+~PREEMPT_NEED_RESCHED~ are set. ~n~ would indicate just ~TIF_NEED_RESCHED~ is
+set. ~p~ would indicate just ~PREEMPT_NEED_RESCHED~ is set. ~.~ no re-scheduling
+from the scheduler is needed and the task can remain running on the CPU.
+~hardirq/softirq~ indicates additional details about IRQ state. ~Z~ indicates a
+NMI has occurred inside a hardirq. ~z~ indicates a NMI is running. ~H~ indicates
+that a hardirq occurred during a softirq context. ~h~ indicates that a hardirq
+is running. ~s~ indicates a softirq is running. ~.~ indicates operating in a
+normal context. ~preempt-depth~ indicates the depth of preempt_disable
+invocations. The is a preempt_counter when non-zero that disables preemption for
+the sake of data protection. More details can be found in
+~Documentation/preempt-locking.txt~ in the linux kernel tree. ~migrate-disable~
+is one of the not so well documented fields if you try to check only against the
+kernel documentation. Migration is a concept heavily involved with SMP
+architecture. Instead of a task staying locked to a specific core, tasks can be
+rescheduled across cores. They are "migrated" from one core to another in the
+context of load balancing done by the scheduler. Similar to the reasonings for
+pre-emption, there are cases where it is not safe to migrate a task/thread from
+one core to another. ~migrate-disable~ keeps track of the migration counter used
+to disable migration support with the ~migrate_enable~/~migrate_disable~ calls.
+For more information, look at the kernel source documentation for
+~__migrate_task~. ~TIMESTAMP~ is comprised of two components, ~time~ and
+~delay~. ~time~ is the time elapsed since ftrace was last enabled and is
+formatted as ~<secs>.<usecs>~. ~delay~ is an indicator, if ever present, will be
+after the ~time~ field. The ~delay~ indicator has a couple of different symbols
+expressing different meanings. *WARNING:* the ~delay~ field is not relative per
+CPU but just between two ftrace events, which can make it misleading.
+
++ ~$~ - greater than 1 sec
++ ~@~ - greater than 100 milliseconds
++ ~*~ - greater than 10 milliseconds
++ ~#~ - greater than 1000 microseconds
++ ~!~ - greater than 100 microseconds
++ ~+~ - greater than 10 microseconds
++ <no symbol> - less than or equal to 10 microseconds
+
+Finally, we have the function name. While its mostly self explanatory, it is
+good to note the the function aFinally, we have the function name. While its
+mostly self explanatory, it is good to note that the function after the ~<-~
+symbol indicates the caller of the function before the symbol.
+
+The function tracer will also give you a line at the very top that has two
+useful values, ~entries-in-buffer~ and ~entries-written~. ~entries-in-buffer~
+represent the total ftrace tracer events that are able to be dumped from the
+ftrace buffer. ~entries-written~ represents that total number of events ftrace
+ever recorded. ~entries-written - entries-in-buffer~ yields the number of events
+ftrace captured that the buffer we can dump out does not contain (essentially
+lost events).
+
+All these details are further expanded upon in the [[https://docs.kernel.org/trace/ftrace.html][ftrace kernel documentation]].
 
 #+BEGIN_SRC shell
 
