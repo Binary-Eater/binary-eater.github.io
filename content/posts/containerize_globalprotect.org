@@ -1,0 +1,63 @@
+---
+title: "Containerizing GlobalProtect using systemd-nspawn"
+tags: ["work", "mis", "boring"]
+date: 2024-12-01T22:35:15-08:00
+draft: true
+---
+
+* Containerizing GlobalProtect using systemd-nspawn
+
+** Why I am doing this?
+
+Let me make this clear. I have never been one to enjoy MIS type topics, and I
+hate things like system administration and installing software. I love learning
+algorithms, coding for the Linux kernel, and reverse engineering bits of Windows
+to make Windows games work smoother on Linux. I also have a job at NVIDIA that I
+very much enjoy (specifically the work involved in the team I am on). In a large
+corporation like NVIDIA, you will have to deal with your company's choices in
+infrastructure and if you are working professionally as a Linux developer, you
+will learn the infrastructure decisions made may not account for your business
+needs as one of the few Linux developers working on PC-class problems. That's
+something you will have to live with as someone passionate about Linux in
+PC-class applications. Back in the early 2000s, Macintosh computers were
+considered niche, esoteric, and only used by "weirdos". This might be ringing
+some bells for the Linux users of today. As Apple kept trying to grow macOS in
+the market, more and more software developers chose to provide "first-class"
+software for the operating system. Linux is going through the same process as we
+speak.
+
+Ok ok, you got to hear a big rant in the last paragraph. Here is why. NVIDIA is
+moving over to Palo Alto Network's GlobalProtect for its VPN solution (through
+their Prisma Access cloud offering). GlobalProtect #TODO
+
+** Why systemd-nspawn?
+
+First of all since I work for a big name company, I cannot reverse engineer the
+proprietary client software and make my own open source client for legal
+reasons. If I was legally permitted to, I would write something that works
+seamlessly with both ~systemd-networkd~ and ~NetworkManager~ as well as
+implements ~NetworkManager~ VPN plugins. I would also choose a design where the
+client software would trivially work on any Linux distribution while maintaining
+Linux's security practices for software dealing with configuration of tunnel
+interfaces. ~openconnect~ is in a limbo state where its unmaintained and not
+regularly providing feedback for MRs opened and merging them over the span of
+years. Effectively, this makes the project archived, and ~openconnect~ also does
+not support the newest GlobalProtect protocols and authentication methods in its
+current state. I do not want to make a fork of ~openconnect~ because security
+researchers would not audit my work in the same manner they are currently
+auditing the ~openconnect~ code repository. Having a VPN client as a side
+project would also be horrible for me. I would like to focus on the low-level
+programming and computer graphics. There is so much to do in those spaces. The
+last thing I need is being distracted by something outside my domain of
+interest.
+
+There is a wrapper project for openconnect to handle the new authentication
+methods. [[https://github.com/yuezk/GlobalProtect-openconnect][yuezk/GlobalProtect-openconnect]] presents a number of issues that make
+me hesitant to use it. The most glaring one is its proprietary paidware GUI
+component shipped with its GPLv3 components. The biggest issue here is unlike
+#TODO
+
+The simple answer is I tried a bunch of things to wrap GlobalProtect to run
+across arbitrary Linux distributions.
+
+sudo debootstrap --include=systemd-container jammy /var/lib/machines/gp-ubuntu http://archive.ubuntu.com/ubuntu
