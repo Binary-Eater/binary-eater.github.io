@@ -1,0 +1,230 @@
+<!doctype html><html lang=en-us><head><title>Patching White Album 2 to work with upstream Proton // Rahul Rameshbabu</title>
+<link rel="shortcut icon" href=/favicon.ico><meta charset=utf-8><meta name=generator content="Hugo 0.139.3"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Rahul Rameshbabu"><meta name=description content><link rel=stylesheet href=/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css><meta name=twitter:card content="summary"><meta name=twitter:title content="Patching White Album 2 to work with upstream Proton"><meta name=twitter:description content="Playing White Album 2, one of the highest rated visual novels White Album 2 is a famous visual novel that rivals Steins;Gate and Muv-Luv in visual novel rankings. Kinoko Nasu's famous visual novels are surprisingly not as high in the rankings as this novel. The title is probably not as well known outside of Japan due to lack of an international release and fan translation only being recently complete (kudos to everyone who contributed to the TodokanaiTL project). I was first introduced to White Album 2 through the form of its anime adaptation in late 2013, while I was still in high school. I found the story compelling but found it to be incomplete. Then, I searched if the show would ever have a second season. This search showed me that the anime came from a visual novel, a concept I was not familiar with at the time. This got me into other visual novels like Fate Stay/Night when I was in high school. However, I could not play White Album 2 at the time due to a lack of English translations and difficulty of acquiring the software. White Album 2 Extended Edition is only sold in physical copies in Japan from what I can tell. Moving onto college and focusing my career around open source Linux programming left my quite busy for the next 10 years. During that time, the TodokanaiTL project made significant progress and eventually finished translations for the main story and after story content. As I tried to follow the project's documentation for using wine with the game, I found the experience to be subpar. Using dxvk with the game would lead to crashes whenever a movie asset finished playing. The movie content in the game would also not show up correctly. Normal Proton would experience these issues with the game and the only working recipe people seemed to have been to vendor some ancient version of Proton-GE. My plan is to play this visual novel on the Steam Deck, so my goal would be to get the game to play perfectly with at least Proton Experimental. With the experience I have gained since high school, it is time to see if I can apply it for the challenge."><meta property="og:url" content="https://binary-eater.github.io/posts/white_album_2_proton/"><meta property="og:site_name" content="Rahul Rameshbabu"><meta property="og:title" content="Patching White Album 2 to work with upstream Proton"><meta property="og:description" content="Playing White Album 2, one of the highest rated visual novels White Album 2 is a famous visual novel that rivals Steins;Gate and Muv-Luv in visual novel rankings. Kinoko Nasu's famous visual novels are surprisingly not as high in the rankings as this novel. The title is probably not as well known outside of Japan due to lack of an international release and fan translation only being recently complete (kudos to everyone who contributed to the TodokanaiTL project). I was first introduced to White Album 2 through the form of its anime adaptation in late 2013, while I was still in high school. I found the story compelling but found it to be incomplete. Then, I searched if the show would ever have a second season. This search showed me that the anime came from a visual novel, a concept I was not familiar with at the time. This got me into other visual novels like Fate Stay/Night when I was in high school. However, I could not play White Album 2 at the time due to a lack of English translations and difficulty of acquiring the software. White Album 2 Extended Edition is only sold in physical copies in Japan from what I can tell. Moving onto college and focusing my career around open source Linux programming left my quite busy for the next 10 years. During that time, the TodokanaiTL project made significant progress and eventually finished translations for the main story and after story content. As I tried to follow the project's documentation for using wine with the game, I found the experience to be subpar. Using dxvk with the game would lead to crashes whenever a movie asset finished playing. The movie content in the game would also not show up correctly. Normal Proton would experience these issues with the game and the only working recipe people seemed to have been to vendor some ancient version of Proton-GE. My plan is to play this visual novel on the Steam Deck, so my goal would be to get the game to play perfectly with at least Proton Experimental. With the experience I have gained since high school, it is time to see if I can apply it for the challenge."><meta property="og:locale" content="en_us"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2024-12-14T15:21:09-08:00"><meta property="article:modified_time" content="2024-12-14T15:21:09-08:00"><meta property="article:tag" content="Linux"><meta property="article:tag" content="Proton"><meta property="article:tag" content="Dxvk"><meta property="article:tag" content="Wine"></head><body><header class=app-header><a href=https://binary-eater.github.io/><img class=app-header-avatar src=/avatar.jpg alt="Rahul Rameshbabu"></a>
+<span class=app-header-title>Rahul Rameshbabu</span><nav class=app-header-menu><a class=app-header-menu-item href=/>Home</a>
+-
+<a class=app-header-menu-item href=/tags/>Tags</a>
+-
+<a class=app-header-menu-item href=/about/>About</a></nav><p>Binary-Eater: A developer focused on low-level programming</p><div class=app-header-social><a href=https://github.com/Binary-Eater target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github"><title>Github</title><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg>
+</a><a href=https://matrix.to/#/@binary-eater:beater.town target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-message-circle"><title>Matrix</title><path d="M21 11.5a8.38 8.38.0 01-.9 3.8A8.5 8.5.0 0112.5 20a8.38 8.38.0 01-3.8-.9L3 21l1.9-5.7A8.38 8.38.0 014 11.5a8.5 8.5.0 014.7-7.6 8.38 8.38.0 013.8-.9h.5a8.48 8.48.0 018 8v.5z"/></svg></a></div></header><main class=app-container><article class=post><header class=post-header><h1 class=post-title>Patching White Album 2 to work with upstream Proton</h1><div class=post-meta><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+Dec 14, 2024</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock"><title>clock</title><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+12 min read</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+<a class=tag href=https://binary-eater.github.io/tags/linux/>Linux</a>
+<a class=tag href=https://binary-eater.github.io/tags/proton/>Proton</a>
+<a class=tag href=https://binary-eater.github.io/tags/dxvk/>Dxvk</a>
+<a class=tag href=https://binary-eater.github.io/tags/wine/>Wine</a></div></div></header><div class=post-content><div id=outline-container-headline-1 class=outline-2><h2 id=headline-1>Playing White Album 2, one of the highest rated visual novels</h2><div id=outline-text-headline-1 class=outline-text-2><p>White Album 2 is a famous visual novel that rivals Steins;Gate and Muv-Luv in
+visual novel rankings. Kinoko Nasu's famous visual novels are surprisingly not
+as high in the rankings as this novel. The title is probably not as well known
+outside of Japan due to lack of an international release and fan translation
+only being recently complete (kudos to everyone who contributed to the
+<code>TodokanaiTL</code> project). I was first introduced to White Album 2 through the form
+of its anime adaptation in late 2013, while I was still in high school. I found
+the story compelling but found it to be incomplete. Then, I searched if the show
+would ever have a second season. This search showed me that the anime came from
+a visual novel, a concept I was not familiar with at the time. This got me into
+other visual novels like Fate Stay/Night when I was in high school. However, I
+could not play White Album 2 at the time due to a lack of English translations
+and difficulty of acquiring the software. White Album 2 Extended Edition is only
+sold in physical copies in Japan from what I can tell. Moving onto college and
+focusing my career around open source Linux programming left my quite busy for
+the next 10 years. During that time, the <code>TodokanaiTL</code> project made significant
+progress and eventually finished translations for the main story and after story
+content. As I tried to follow the project's documentation for using <code>wine</code> with
+the game, I found the experience to be subpar. Using <code>dxvk</code> with the game would
+lead to crashes whenever a movie asset finished playing. The movie content in
+the game would also not show up correctly. Normal Proton would experience these
+issues with the game and the only working recipe people seemed to have been to
+vendor some ancient version of Proton-GE. My plan is to play this visual novel
+on the Steam Deck, so my goal would be to get the game to play perfectly with at
+least Proton Experimental. With the experience I have gained since high school,
+it is time to see if I can apply it for the challenge.</p></div></div><div id=outline-container-headline-2 class=outline-2><h2 id=headline-2>Debugging the game</h2><div id=outline-text-headline-2 class=outline-text-2><p>There are two major issues that impact White Album 2's compatibility with
+<a href=https://github.com/ValveSoftware/Proton>ValveSoftware/Proton</a>. This blog and the
+<a href=https://github.com/Binary-Eater/WhiteAlbum2-Proton-patch-scripts>Binary-Eater/WhiteAlbum2-Proton-patch-scripts</a> repository assume you are working
+the Extended Edition of the game. For general instructions about installing and
+patching the game in the first place, please refer to the <a href=https://todokanaitl.github.io/>TodokanaiTL project
+site</a> and <a href=https://todokanaitl.github.io/wa2-wine/>TodokanaiTL Wine install instructions</a>. I would recommend getting on
+their Discord and checking out their announcements channel because that seems to
+be the only reasonable place for finding the latest English translation patches.
+You can dismiss the information about locales, winetricks, and gstreamer since
+you will be using Proton at the end of the day for launching the game (I assume
+if this was not the case, you would not be reading this). You can use Proton
+instead of Wine for running the installer by adding the installer executable as
+a game entry in your library for installing the game. This is especially useful
+on platforms like the Steam Deck. The scripts in this repository are written
+such that they will work with SteamOS/the Steam Deck without the user needing to
+figure out how to install anything special. All binaries used by the scripts
+come with SteamOS.</p><div id=outline-container-headline-3 class=outline-3><h3 id=headline-3>White Album 2 seems to crash after the opening movie (the company logo) finishes, hmmmm….</h3><div id=outline-text-headline-3 class=outline-text-3><p>The first things to do in this situation is the following. Invoke the game once
+again but configure <code>PROTON_WAIT_ATTACH=1 %command%</code> under the game's properties
+in the "Launch Options" field.</p><p>Now, we will use <code>gdb</code> to attach to the process and dump a backtrace when the
+game crashes.</p><div class="src src-shell"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>  ~ 
+</span></span><span style=display:flex><span>  ❯ ps aux | grep WA2.exe
+</span></span><span style=display:flex><span>  binary-+   <span style=color:#ae81ff>73583</span>  0.0  0.0  <span style=color:#ae81ff>28728</span>  <span style=color:#ae81ff>5584</span> ?        S    18:52   0:00 /home/binary-eater/.local/share/Steam/ubuntu12_32/reaper SteamLaunch AppId<span style=color:#f92672>=</span><span style=color:#ae81ff>3539914974</span> -- /home/binary-eater/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/_v2-entry-point --verb<span style=color:#f92672>=</span>waitforexitandrun -- /home/binary-eater/.local/share/Steam/steamapps/common/Proton - Experimental/proton waitforexitandrun /home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe
+</span></span><span style=display:flex><span>  binary-+   <span style=color:#ae81ff>73584</span>  0.9  0.0   <span style=color:#ae81ff>4656</span>  <span style=color:#ae81ff>1392</span> ?        S    18:52   0:00 /home/binary-eater/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/pressure-vessel/libexec/steam-runtime-tools-0/srt-bwrap --args <span style=color:#ae81ff>21</span> /usr/lib/pressure-vessel/from-host/bin/pressure-vessel-adverb --generate-locales --fd <span style=color:#ae81ff>13</span> --regenerate-ld.so-cache /var/pressure-vessel/ldso --add-ld.so-path /usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu --add-ld.so-path /usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu --set-ld-library-path /usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/aliases:/usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu/aliases --exit-with-parent --subreaper --assign-fd<span style=color:#f92672>=</span>1<span style=color:#f92672>=</span><span style=color:#ae81ff>3</span> --assign-fd<span style=color:#f92672>=</span>2<span style=color:#f92672>=</span><span style=color:#ae81ff>4</span> --shell<span style=color:#f92672>=</span>none --terminal<span style=color:#f92672>=</span>none --ld-preload<span style=color:#f92672>=</span>/home/binary-eater/.local/share/Steam/ubuntu12_32/gameoverlayrenderer.so --ld-preload<span style=color:#f92672>=</span>/home/binary-eater/.local/share/Steam/ubuntu12_64/gameoverlayrenderer.so -- /home/binary-eater/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/pressure-vessel/bin/steam-runtime-launcher-interface-0 container-runtime /home/binary-eater/.local/share/Steam/steamapps/common/Proton - Experimental/proton waitforexitandrun /home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe
+</span></span><span style=display:flex><span>  binary-+   <span style=color:#ae81ff>73731</span>  0.3  0.0  <span style=color:#ae81ff>23600</span>  <span style=color:#ae81ff>4304</span> ?        Ss   18:52   0:00 /usr/lib/pressure-vessel/from-host/bin/pressure-vessel-adverb --generate-locales --fd <span style=color:#ae81ff>13</span> --regenerate-ld.so-cache /var/pressure-vessel/ldso --add-ld.so-path /usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu --add-ld.so-path /usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu --set-ld-library-path /usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/aliases:/usr/lib/pressure-vessel/overrides/lib/i386-linux-gnu/aliases --exit-with-parent --subreaper --assign-fd<span style=color:#f92672>=</span>1<span style=color:#f92672>=</span><span style=color:#ae81ff>3</span> --assign-fd<span style=color:#f92672>=</span>2<span style=color:#f92672>=</span><span style=color:#ae81ff>4</span> --shell<span style=color:#f92672>=</span>none --terminal<span style=color:#f92672>=</span>none --ld-preload<span style=color:#f92672>=</span>/home/binary-eater/.local/share/Steam/ubuntu12_32/gameoverlayrenderer.so --ld-preload<span style=color:#f92672>=</span>/home/binary-eater/.local/share/Steam/ubuntu12_64/gameoverlayrenderer.so -- /home/binary-eater/.local/share/Steam/steamapps/common/SteamLinuxRuntime_sniper/pressure-vessel/bin/steam-runtime-launcher-interface-0 container-runtime /home/binary-eater/.local/share/Steam/steamapps/common/Proton - Experimental/proton waitforexitandrun /home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe
+</span></span><span style=display:flex><span>  binary-+   <span style=color:#ae81ff>73758</span>  0.0  0.1 <span style=color:#ae81ff>135128</span> <span style=color:#ae81ff>47164</span> ?        S    18:52   0:00 python3 /home/binary-eater/.local/share/Steam/steamapps/common/Proton - Experimental/proton waitforexitandrun /home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe
+</span></span><span style=display:flex><span>  binary-+   <span style=color:#ae81ff>73761</span>  0.0  0.0 <span style=color:#ae81ff>564156</span>  <span style=color:#ae81ff>9332</span> ?        Sl   18:52   0:00 /run/pressure-vessel/pv-from-host/bin/steam-runtime-launcher-service --exec-fallback --hint --inside-app --no-stop-on-name-loss --replace --session -- /home/binary-eater/.local/share/Steam/steamapps/common/Proton - Experimental/files/bin/wine64 c:<span style=color:#ae81ff>\w</span>indows<span style=color:#ae81ff>\s</span>ystem32<span style=color:#ae81ff>\s</span>team.exe /home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe
+</span></span><span style=display:flex><span>  binary-+   <span style=color:#ae81ff>73766</span>  0.1  0.0 <span style=color:#ae81ff>431328</span> <span style=color:#ae81ff>32232</span> ?        Sl   18:52   0:00 c:<span style=color:#ae81ff>\w</span>indows<span style=color:#ae81ff>\s</span>ystem32<span style=color:#ae81ff>\s</span>team.exe /home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe
+</span></span><span style=display:flex><span>  binary-+   <span style=color:#ae81ff>74072</span>  0.0  0.0   <span style=color:#ae81ff>8724</span>  <span style=color:#ae81ff>2728</span> pts/0    S+   18:53   0:00 grep WA2.exe
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  ~ 
+</span></span><span style=display:flex><span>  ❯ sudo gdb
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>sudo<span style=color:#f92672>]</span> password <span style=color:#66d9ef>for</span> binary-eater: 
+</span></span><span style=display:flex><span>  GNU gdb <span style=color:#f92672>(</span>GDB<span style=color:#f92672>)</span> 14.2
+</span></span><span style=display:flex><span>  Copyright <span style=color:#f92672>(</span>C<span style=color:#f92672>)</span> <span style=color:#ae81ff>2023</span> Free Software Foundation, Inc.
+</span></span><span style=display:flex><span>  License GPLv3+: GNU GPL version <span style=color:#ae81ff>3</span> or later &lt;http://gnu.org/licenses/gpl.html&gt;
+</span></span><span style=display:flex><span>  This is free software: you are free to change and redistribute it.
+</span></span><span style=display:flex><span>  There is NO WARRANTY, to the extent permitted by law.
+</span></span><span style=display:flex><span>  Type <span style=color:#e6db74>&#34;show copying&#34;</span> and <span style=color:#e6db74>&#34;show warranty&#34;</span> <span style=color:#66d9ef>for</span> details.
+</span></span><span style=display:flex><span>  This GDB was configured as <span style=color:#e6db74>&#34;x86_64-unknown-linux-gnu&#34;</span>.
+</span></span><span style=display:flex><span>  Type <span style=color:#e6db74>&#34;show configuration&#34;</span> <span style=color:#66d9ef>for</span> configuration details.
+</span></span><span style=display:flex><span>  For bug reporting instructions, please see:
+</span></span><span style=display:flex><span>  &lt;https://www.gnu.org/software/gdb/bugs/&gt;.
+</span></span><span style=display:flex><span>  Find the GDB manual and other documentation resources online at:
+</span></span><span style=display:flex><span>      &lt;http://www.gnu.org/software/gdb/documentation/&gt;.
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  For help, type <span style=color:#e6db74>&#34;help&#34;</span>.
+</span></span><span style=display:flex><span>  Type <span style=color:#e6db74>&#34;apropos word&#34;</span> to search <span style=color:#66d9ef>for</span> commands related to <span style=color:#e6db74>&#34;word&#34;</span>.
+</span></span><span style=display:flex><span>  <span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> set follow-fork-mode child 
+</span></span><span style=display:flex><span>  <span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> attach <span style=color:#ae81ff>73766</span>
+</span></span><span style=display:flex><span>  Attaching to process <span style=color:#ae81ff>73766</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>New LWP 73835<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Thread debugging using libthread_db enabled<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  Using host libthread_db library <span style=color:#e6db74>&#34;/nix/store/c10zhkbp6jmyh0xc5kd123ga8yy2p4hk-glibc-2.39-52/lib/libthread_db.so.1&#34;</span>.
+</span></span><span style=display:flex><span>  0x00007f61a3cb078c in <span style=color:#66d9ef>select</span> <span style=color:#f92672>()</span> from target:/usr/lib/pressure-vessel/overrides/lib/x86_64-linux-gnu/libc.so.6
+</span></span><span style=display:flex><span>  <span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> c
+</span></span><span style=display:flex><span>  Continuing.
+</span></span><span style=display:flex><span>  Error <span style=color:#66d9ef>while</span> mapping shared library sections:
+</span></span><span style=display:flex><span>  <span style=color:#e6db74>`</span>target:/home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe<span style=color:#e6db74>&#39;: Shared library architecture i386 is not compatible with target architecture i386:x86-64.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>  Error while mapping shared library sections:
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>  `target:/home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe&#39;</span>: Shared library architecture i386 is not compatible with target architecture i386:x86-64.
+</span></span><span style=display:flex><span>  Error <span style=color:#66d9ef>while</span> mapping shared library sections:
+</span></span><span style=display:flex><span>  <span style=color:#e6db74>`</span>target:/home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe<span style=color:#e6db74>&#39;: Shared library architecture i386 is not compatible with target architecture i386:x86-64.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>  Error while mapping shared library sections:
+</span></span></span><span style=display:flex><span><span style=color:#e6db74>  `target:/home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe&#39;</span>: Shared library architecture i386 is not compatible with target architecture i386:x86-64.
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Attaching after Thread 0x7f61a37acf80 <span style=color:#f92672>(</span>LWP 73766<span style=color:#f92672>)</span> fork to child process 74223<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>New inferior <span style=color:#ae81ff>2</span> <span style=color:#f92672>(</span>process 74223<span style=color:#f92672>)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Detaching after fork from parent process 73766<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Inferior <span style=color:#ae81ff>1</span> <span style=color:#f92672>(</span>process 73766<span style=color:#f92672>)</span> detached<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Thread debugging using libthread_db enabled<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  Using host libthread_db library <span style=color:#e6db74>&#34;/nix/store/c10zhkbp6jmyh0xc5kd123ga8yy2p4hk-glibc-2.39-52/lib/libthread_db.so.1&#34;</span>.
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Attaching after Thread 0x7f61a37acf80 <span style=color:#f92672>(</span>LWP 74223<span style=color:#f92672>)</span> fork to child process 74224<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>New inferior <span style=color:#ae81ff>3</span> <span style=color:#f92672>(</span>process 74224<span style=color:#f92672>)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Detaching after fork from parent process 74223<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Inferior <span style=color:#ae81ff>2</span> <span style=color:#f92672>(</span>process 74223<span style=color:#f92672>)</span> detached<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Thread debugging using libthread_db enabled<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  Using host libthread_db library <span style=color:#e6db74>&#34;/nix/store/c10zhkbp6jmyh0xc5kd123ga8yy2p4hk-glibc-2.39-52/lib/libthread_db.so.1&#34;</span>.
+</span></span><span style=display:flex><span>  process <span style=color:#ae81ff>74224</span> is executing new program: /home/binary-eater/.local/share/Steam/steamapps/common/Proton - Experimental/files/bin/wine-preloader
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Thread debugging using libthread_db enabled<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  Using host libthread_db library <span style=color:#e6db74>&#34;/nix/store/c10zhkbp6jmyh0xc5kd123ga8yy2p4hk-glibc-2.39-52/lib/libthread_db.so.1&#34;</span>.
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>New Thread 0x206fb40 <span style=color:#f92672>(</span>LWP 74231<span style=color:#f92672>)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>New Thread 0x2c3fb40 <span style=color:#f92672>(</span>LWP 74234<span style=color:#f92672>)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>New Thread 0xf1fffb40 <span style=color:#f92672>(</span>LWP 74236<span style=color:#f92672>)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Thread 0x2c3fb40 <span style=color:#f92672>(</span>LWP 74234<span style=color:#f92672>)</span> exited<span style=color:#f92672>]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>New Thread 0xdfc98b40 <span style=color:#f92672>(</span>LWP 74246<span style=color:#f92672>)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>New Thread 0xde273b40 <span style=color:#f92672>(</span>LWP 74247<span style=color:#f92672>)]</span>
+</span></span><span style=display:flex><span>  &lt;output omitted...&gt;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  Thread 3.1 <span style=color:#e6db74>&#34;WA2.exe&#34;</span> received signal SIGSEGV, Segmentation fault.
+</span></span><span style=display:flex><span>  <span style=color:#f92672>[</span>Switching to Thread 0xf7860b00 <span style=color:#f92672>(</span>LWP 74224<span style=color:#f92672>)]</span>
+</span></span><span style=display:flex><span>  0x00000000 in ?? <span style=color:#f92672>()</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>(</span>gdb<span style=color:#f92672>)</span> bt
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#0  0x00000000 in ?? ()</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#1  0x794f09d9 in vmr_destroy (iface=0x1f1dd28) at ../src-wine/dlls/quartz/vmr7.c:446</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#2  0x794e4263 in filter_inner_Release (iface=0x1f1dd30) at ../src-wine/libs/strmbase/filter.c:259</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#3  0x7948c3e3 in FilterGraph2_RemoveFilter (iface=0x1ed4e3c, pFilter=0x1f1dd28) at ../src-wine/dlls/quartz/filtergraph.c:766</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#4  0x7948d614 in IFilterGraph2_RemoveFilter (pFilter=&lt;optimized out&gt;, This=0x1ed4e3c) at include/strmif.h:7180</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#5  FilterGraphInner_Release (iface=0x1ed4e38) at ../src-wine/dlls/quartz/filtergraph.c:461</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#6  FilterGraphInner_Release (iface=0x1ed4e38) at ../src-wine/dlls/quartz/filtergraph.c:441</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#7  0x0044b937 in ?? () from target:/home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2/WA2.exe</span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#8  0x18a164ec in ?? ()</span>
+</span></span><span style=display:flex><span>  Backtrace stopped: Cannot access memory at address 0x8b55ff8f</span></span></code></pre></div></div><p>Here we can see that we attempted to call a function at address 0x00000000
+(NULL). Clearly, a function pointer has gone corrupt. Now let's get into the
+details.</p><p>Some background information that can help</p><ul><li>Basic knowledge of what <a href=https://learn.microsoft.com/en-us/windows/win32/directshow/using-the-video-mixing-renderer>Video Mixing Renderer</a> is</li><li>An understanding of <a href="https://devblogs.microsoft.com/oldnewthing/20040205-00/?p=40733">COM objects and lpVtbl in the Windows C world</a></li></ul><p>What I noticed when gdb-ing <code>wine</code>, <code>dxvk</code>, and the game is that on <a href=https://github.com/ValveSoftware/wine/blob/488fb296dda334a1e8555a9dd8f5cbe09be2afe5/dlls/quartz/vmr7.c#L429>vmr_destroy</a>
+I would try to call a function pointer that was referring to NULL. What I
+noticed is that at the start of <code>vmr_destroy</code>, the function callback referred to
+a valid address and right before calling <code>IDirect3DDevice9_Release</code> with
+<code>filter->device</code>. The same device instance is also referred to by
+<code>filter->presenter->device</code>, so the refcount to device needs to be decremented
+by <code>presenter</code> first. This is done in <a href=https://github.com/ValveSoftware/wine/blob/488fb296dda334a1e8555a9dd8f5cbe09be2afe5/dlls/quartz/vmr7.c#L1768>VMR9_ImagePresenter_Release</a>. It's the
+<code>IDirect3DDevice9_Release</code> call in <code>VMR9_ImagePresenter_Release</code> that would lead
+to the function pointer becoming NULL. An important detail is that function
+pointer is part of a <code>lpVtbl</code> of a COM object representing a D3D9 device
+instance allocated for VMR. After finishing <code>VMR9_ImagePresenter_Release</code>,
+<code>vmr_destroy</code> will then trigger a <code>SIGSEGV</code> trying to make a call to a NULL
+pointer in the <code>lpVtbl</code>. At this point, I <em>thought</em> the problem was going to be
+<em>simple</em>. I put breakpoints into <code>vmr_destroy</code> and <code>VMR9_ImagePresenter_Release</code>
+as well as step into the related <a href=https://github.com/doitsujin/dxvk/blob/d0ea5a4a87c9b4ee8a7d700c5f55baf26054bd6a/src/util/com/com_object.h#L102>DXVK COM object interface for Release</a>. 4 hours
+later, still confused why the <code>lpVtbl</code> entries were getting updated since the
+code traced in DXVK and the wine side should have been doing and what I observed
+was that the refcount for the COM object should be decremented from 2 to 1 (and
+nothing else). When you do not know why something in memory is getting updated,
+you use a watchpoint in gdb. I basically set a watchpoint to check when the
+lpVtbl's Release method was updated. I only enabled this watchpoint when I
+reached the <code>IDirect3DDevice9_Release</code> call in <code>VMR9_ImagePresenter_Release</code>.
+What I found was something I would never have realized with breakpoints (or if I
+decided to compile all the components from source with print statements as
+well). The <code>lpVtbl</code> was actually getting corrupted by a closed source <code>d3d9.dll</code>
+vendored with the game……. This DLL has this <code>d3d9!_Direct3DCreate9Hook</code> hook
+that intercepts all d3d9 API calls and then dispatches them to the real
+<code>d3d9.dll</code> on the system (so DXVK in this case). What I did not realize is that
+in some path for <code>IDirect3DDevice9_Release</code>, this stub dll would call
+<code>RtlFreeHeap</code> on some part of the COM object that would end up corrupting the
+<code>lpVtbl</code>. If I move this dll out of the game's loading path, the game will
+directly use DXVK's <code>d3d9.dll</code> and the issue is mitigated since the <code>lpVtbl</code> is
+no longer corrupted.</p><p>My debug session summarized (where you can see the related watchpoint usage and
+tracing):
+<a href=https://gist.github.com/Binary-Eater/40e55d263e37b610122b8ee6a3c2f0c9>https://gist.github.com/Binary-Eater/40e55d263e37b610122b8ee6a3c2f0c9</a></p><p>Resources that helped me</p><ul><li><a href=https://github.com/ValveSoftware/Proton/blob/proton_9.0/docs/DEBUGGING.md>https://github.com/ValveSoftware/Proton/blob/proton_9.0/docs/DEBUGGING.md</a></li><li><p><a href=https://github.com/ValveSoftware/Proton/blob/proton_9.0/README.md#debugging>https://github.com/ValveSoftware/Proton/blob/proton_9.0/README.md#debugging</a></p><ul><li>saved me from compiling proton from source. I just had the source code
+checked out locally and used set substitute-path … in gdb.</li></ul></li><li><p><a href=https://gitlab.winehq.org/wine/wine/-/wikis/Wine-Developer%27s-Guide/Debugging-Wine>https://gitlab.winehq.org/wine/wine/-/wikis/Wine-Developer%27s-Guide/Debugging-Wine</a></p><ul><li>winedbg was useful, but I just hopped back to using native gdb on the unix side</li></ul></li><li>Microsoft documentation such as <a href=https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/ntifs/nf-ntifs-rtlfreeheap>RtlFreeHeap</a> and <a href=https://learn.microsoft.com/en-us/windows/win32/api/d3d9helper/nn-d3d9helper-idirect3ddevice9>IDirect3DDevice9</a>.</li></ul><p>Btw, using <code>PROTON_USE_WINED3D=1</code> does seem to continue playing without crashing
+the game, but that weird <code>RtlFreeHeap</code> call still occurs from the stubbed
+d3d9.dll vendored with the game, so I would just patch it and still use DXVK.</p><p>To patch the White Album 2 installation for resolving this issue, you can simply
+run something along the lines of the following.</p><div class="src src-shell"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>  ~/Documents/wa2-patch-scripts
+</span></span><span style=display:flex><span>  ❯ ./wa2-proton-dxvk-patch.sh ~/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE<span style=color:#ae81ff>\ </span>ALBUM2/
+</span></span><span style=display:flex><span>  Found WHITE ALBUM <span style=color:#ae81ff>2</span> d3d9.dll
+</span></span><span style=display:flex><span>  Moved to /home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2//d3d9.dll.old...
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  ~/Documents/wa2-patch-scripts 
+</span></span><span style=display:flex><span>  ❯ ./wa2-proton-dxvk-patch.sh ~/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE<span style=color:#ae81ff>\ </span>ALBUM2<span style=color:#ae81ff>\ </span>Special<span style=color:#ae81ff>\ </span>Contents/
+</span></span><span style=display:flex><span>  Did not find vendored d3d9.dll in path /home/binary-eater/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE ALBUM2 Special Contents/</span></span></code></pre></div></div></div></div><div id=outline-container-headline-4 class=outline-3><h3 id=headline-4>White Album 2's use of Microsoft Advanced Streaming Format (ASF) (video/x-ms-asf)</h3><div id=outline-text-headline-4 class=outline-text-3><p>Ignoring the glaring game crashing bug above, White Album 2 is a Japanese Visual
+Novel, and movie assets tend to be a big part of some of these novels. Imagine
+not being able to actually see any of those movie assets while playing the game.</p><img src=./gstreamer-test-pattern.png alt=./gstreamer-test-pattern.png title=./gstreamer-test-pattern.png width=60%><p>As amazing as "Pattern Test: The Video Game" is, I would like to properly play
+White Album 2. Luckily, this issue is fairly simple to debug. First, let's
+relaunch the game with the following launch option, <code>PROTON_LOG=1 %command%</code> We
+will see a file under the home directory of the user, <code>​~/steam-&lt;id>.log</code>. We
+should then see the following in the file.</p><blockquote><p>Missing decoder: Advanced Streaming Format (ASF) (video/x-ms-asf)</p></blockquote><p><code>asf</code> support is provided by the <a href="https://gstreamer.freedesktop.org/documentation/asf/index.html?gi-language=c">gstreamer ugly plugin</a>. <a href=https://en.wikipedia.org/wiki/Advanced_Systems_Format#License>Microsoft's licensing
+for ASF</a> is quite messy. This means if Valve were to build any software that
+included support for Advanced Streaming Format, Valve may likely be subject to
+legal action from Microsoft. <strong>DISCLAIMER:</strong> I am not a lawyer, so I could be
+wrong here. This is my personal understanding of the situation regarding <code>asf</code>.</p><p>Since gstreamer knows it is unable to decode the video asset, it instead
+provides a test pattern in its place for the duration of the asset. Valve may
+not be able to package the needed gstreamer functionality in its Proton stack,
+but there is nothing stopping <code>ffmpeg</code> on the Steam Deck since <code>ffmpeg</code> is not
+being developed by Valve. We can use ffmpeg to convert all of White Album 2's
+movie assets into H.264 encoded mp4 files that Proton's gstreamer packaging will
+have no issues handling.</p><p>I packaged a script in this repository to handle converting the movie assets of
+the game.</p><div class="src src-shell"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell><span style=display:flex><span>  ❯ ./wa2-proton-gstreamer-patch.sh ~/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE<span style=color:#ae81ff>\ </span>ALBUM2/
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  ❯ ./wa2-proton-gstreamer-patch.sh ~/.local/share/wineprefixes/wa2/drive_c/Leaf/WHITE<span style=color:#ae81ff>\ </span>ALBUM2<span style=color:#ae81ff>\ </span>Special<span style=color:#ae81ff>\ </span>Contents/</span></span></code></pre></div></div><p>With all of this, I can properly play the game without issue. Here are some
+images from the game to illustrate.</p><ul width=40%><li><img src=./leaf.png alt=./leaf.png title=./leaf.png></li><li><img src=./intro-movie-scene.png alt=./intro-movie-scene.png title=./intro-movie-scene.png></li><li><img src=./intro-movie-title.png alt=./intro-movie-title.png title=./intro-movie-title.png></li><li><img src=./menu.png alt=./menu.png title=./menu.png></li></ul></div></div><div id=outline-container-headline-5 class=outline-3><h3 id=headline-5>Some Steam Deck caveats</h3><div id=outline-text-headline-5 class=outline-text-3><p><strong>UPDATE:</strong> The game seems to be perfectly working in gamescope ("Game Mode") with
+no setting changes, so the below excerpt is no longer relevant. Leaving it just
+in case someone still finds it useful.</p><p>Right now, with just the above two patches, I have the game working perfectly
+for me on XMonad on my desktop. I also have the game perfectly working on my
+Steam Deck except I am not running the game the normal way. When in "Game Mode"
+on the Steam Deck, the <a href=https://github.com/ValveSoftware/gamescope>gamescope</a> compositor is used. With gamescope, I see a
+black screen and the window playing the game fails to be presented on the Steam
+Deck. If I switch to "Desktop Mode" on the Steam Deck, the Steam Deck now uses
+KDE Plasma instead of gamescope and the game runs just like on XMonad on my
+desktop. There is one caveat though with Plasma. It has a dock/taskbar at the
+bottom of the screen that by default is always pinned. Because of the "always
+visible" setting, the dock presents itself even with some applications
+attempting to fullscreen. WHITE ALBUM 2 and the dock will fight trying to
+present on the screen, leading to an annoying experience. I change the dock's
+visibility settings so it's hidden unless explicitly navigated to, and it does
+not come up at all while playing the game. What I do after this is run Steam in
+big picture mode after switching to KDE Plasma on the Steam Deck and launch
+White Album 2. Luckily setting up gamescope and KDE Plasma on my desktop is
+trivial for me to try to reproduce and debug the issue. I believe the issues
+here are likely issues with the Wayland compositors (or related) rather than
+Wine or other related components in Proton. Debugging on the Steam Deck is
+annoying unless I want to disable the read-only root filesystem and set up an
+ssh server (I rather not). I am interested in debugging both the gamescope and
+Plasma dock/taskbar related issues, but I would like to first finish the game
+now that I can play it on the Steam Deck.</p></div></div></div></div></div><div class=post-footer></div></article></main></body></html>
