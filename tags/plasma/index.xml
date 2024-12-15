@@ -1,2 +1,36 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Plasma on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/plasma/</link><description>Recent content in Plasma on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 11 Feb 2024 19:55:59 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/plasma/index.xml" rel="self" type="application/rss+xml"/><item><title>Speedrunning setting up a plasma-nm development environment</title><link>https://binary-eater.github.io/posts/plasma-nm-dev/</link><pubDate>Sun, 11 Feb 2024 19:55:59 -0800</pubDate><guid>https://binary-eater.github.io/posts/plasma-nm-dev/</guid><description>Why did I set up a plasma-nm development environment in the first place? Why did I want to contribute changes to plasma-nm? If you have peaked at my GitHub profile or activity, you probably know a couple of things about me.
-I do not use Plasma or GNOME but rather Xmonad. I mostly focus on kernel development and related low-level subjects these days. So why would I bother contributing to plasma-nm?</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Plasma on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/plasma/</link><description>Recent content in Plasma on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 11 Feb 2024 19:55:59 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/plasma/index.xml" rel="self" type="application/rss+xml"/><item><title>Speedrunning setting up a plasma-nm development environment</title><link>https://binary-eater.github.io/posts/plasma-nm-dev/</link><pubDate>Sun, 11 Feb 2024 19:55:59 -0800</pubDate><guid>https://binary-eater.github.io/posts/plasma-nm-dev/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Why did I set up a plasma-nm development environment in the first place?
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;div id="outline-container-headline-2" class="outline-3">
+&lt;h3 id="headline-2">
+Why did I want to contribute changes to plasma-nm?
+&lt;/h3>
+&lt;div id="outline-text-headline-2" class="outline-text-3">
+&lt;p>
+If you have peaked at my GitHub profile or activity, you probably know a couple of
+things about me.&lt;/p>
+&lt;ol>
+&lt;li>I do not use Plasma or GNOME but rather Xmonad.&lt;/li>
+&lt;li>I mostly focus on kernel development and related low-level subjects these
+days.&lt;/li>
+&lt;/ol>
+&lt;p>So why would I bother contributing to &lt;code>plasma-nm&lt;/code>? Well, the company that pays
+me for my day job uses Cisco AnyConnect as the VPN solution. From our company&amp;#39;s
+IT management perspective, Cisco AnyConnect &amp;#34;supports&amp;#34; Windows, macOS, and
+Linux. The Linux client does not meet our needs, and we need to support FreeBSD
+development as well. We depend heavily on the &lt;a href="https://www.infradead.org/openconnect/">openconnect&lt;/a> reverse-engineered
+alternative. The company uses a strict SSO model backed by Microsoft Identity
+Platform services. Support for SSO flows is available through the AnyConnect
+ecosystem through the SAML mechanism, which openconnect has implemented in
+recent years. There are two possible flows/algorithms for the SAML model with
+AnyConnect. One flow involves needing to feed cookies programmatically back into
+&lt;code>libopenconnect&lt;/code> for the authentication browser to succeed. The other flow
+involves redirecting a base64 blob that was generated through an authentication
+process done in a browser like Firefox or Chromium back to a localhost server
+run by openconnect for the sake of IPC with the external browser program. While
+the latter flow is much easier to utilize by users with no additional code
+changes required to be used, Cisco limits the external browser flow to newer
+hardware devices in their product model. This means supporting both flows is an
+important task for providing support for a variety of users.&lt;/p></description></item></channel></rss>

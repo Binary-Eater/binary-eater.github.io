@@ -1,1 +1,16 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Site on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/site/</link><description>Recent content in Site on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 10 Dec 2023 18:23:18 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/site/index.xml" rel="self" type="application/rss+xml"/><item><title>Site theme change</title><link>https://binary-eater.github.io/posts/theme_change/</link><pubDate>Sun, 10 Dec 2023 18:23:18 -0800</pubDate><guid>https://binary-eater.github.io/posts/theme_change/</guid><description>Why I changed the theme of my site? When I first started this page, I built my own theme hugo-theme-ghci based on the work done on the hugo-theme-ghci theme. I did this because I dislike the idea of using someone else&amp;#39;s creative work to express myself on a personal site. I am really thankful to people who share themes for this purpose. I just thought back then I could make something more creative that expresses my interests.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Site on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/site/</link><description>Recent content in Site on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 10 Dec 2023 18:23:18 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/site/index.xml" rel="self" type="application/rss+xml"/><item><title>Site theme change</title><link>https://binary-eater.github.io/posts/theme_change/</link><pubDate>Sun, 10 Dec 2023 18:23:18 -0800</pubDate><guid>https://binary-eater.github.io/posts/theme_change/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Why I changed the theme of my site?
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+When I first started this page, I built my own theme &lt;a href="https://github.com/Binary-Eater/hugo-theme-ghci">hugo-theme-ghci&lt;/a> based on
+the work done on the &lt;a href="https://github.com/Yukuro/hugo-theme-shell">hugo-theme-ghci&lt;/a> theme. I did this because I dislike the
+idea of using someone else&amp;#39;s creative work to express myself on a personal site.
+I am really thankful to people who share themes for this purpose. I just thought
+back then I could make something more creative that expresses my interests.
+Unfortunately, reality has a nice way of crashing into you like freight train.
+The work it would take for me to build a creative site on top of upstream
+development work I am interested is too much for me right now. In terms of
+programming, I want to make my C and Rust as strong as possible as well as my
+knowledge of computer architecture and algorithms.&lt;/p></description></item></channel></rss>

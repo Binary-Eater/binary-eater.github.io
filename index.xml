@@ -1,13 +1,193 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Rahul Rameshbabu</title><link>https://binary-eater.github.io/</link><description>Recent content on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 28 Apr 2024 21:53:41 -0700</lastBuildDate><atom:link href="https://binary-eater.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Career Change: From Linux Kernel Networking to Linux Graphics</title><link>https://binary-eater.github.io/posts/job_change/</link><pubDate>Sun, 28 Apr 2024 21:53:41 -0700</pubDate><guid>https://binary-eater.github.io/posts/job_change/</guid><description>Changing Jobs I wanted to announce that I am changing jobs. In my previous role, I worked at NVIDIA as a Linux kernel developer specifically focused on netdev changes for the ConnectX and BlueField products. You can find my relevant work in my previous position by searching my name on the netdev mailing list archives.
-I am moving to a new role as part of NVIDIA&amp;#39;s Linux Graphics Team. The team&amp;#39;s work involves DRM/KMS, X11 and Wayland UMD work, as well as OpenGL and Vulkan support.</description></item><item><title>Setting up a minimal git server to support Microsoft SSO using OIDC</title><link>https://binary-eater.github.io/posts/git_oidc/</link><pubDate>Mon, 19 Feb 2024 08:29:43 -0800</pubDate><guid>https://binary-eater.github.io/posts/git_oidc/</guid><description>Prerequisites This tutorial is less about how to get a bare git server up and running on XYZ ecosystem and more about taking an existing setup and providing SSO authentication support to it for git over HTTP usage. While the tutorial will target Microsoft&amp;#39;s SSO offerings, the concepts discussed can be re-applied to any OIDC identity provider. My recommendation is to first work with a tutorial that helps you get a basic cgit setup up and running, which you are able to clone from.</description></item><item><title>Speedrunning setting up a plasma-nm development environment</title><link>https://binary-eater.github.io/posts/plasma-nm-dev/</link><pubDate>Sun, 11 Feb 2024 19:55:59 -0800</pubDate><guid>https://binary-eater.github.io/posts/plasma-nm-dev/</guid><description>Why did I set up a plasma-nm development environment in the first place? Why did I want to contribute changes to plasma-nm? If you have peaked at my GitHub profile or activity, you probably know a couple of things about me.
-I do not use Plasma or GNOME but rather Xmonad. I mostly focus on kernel development and related low-level subjects these days. So why would I bother contributing to plasma-nm?</description></item><item><title>bcm4331 and MacBook WiFi woes</title><link>https://binary-eater.github.io/posts/bcm4331_and_macbook_wifi_woes/</link><pubDate>Mon, 01 Jan 2024 18:09:27 -0800</pubDate><guid>https://binary-eater.github.io/posts/bcm4331_and_macbook_wifi_woes/</guid><description>Story Time DISCLAIMER: skip this section if you want to get to the core content.
-Before running off thinking this has nothing to do with Linux kernel development, we will get there (I promise). However, I think some background context is in order. Rewind a year back to LPC 2022, I was attending LPC for the very first time (virtually). I was super excited since LPC is basically a treasure trove of talks that typically catch my interest.</description></item><item><title>bpftrace</title><link>https://binary-eater.github.io/posts/bpftrace/</link><pubDate>Sun, 10 Dec 2023 21:32:59 -0800</pubDate><guid>https://binary-eater.github.io/posts/bpftrace/</guid><description>What is bpftrace? bpftrace is both a CLI tool and a tracing language that compiles down to Linux enhanced Berkeley Packet Filter (eBPF) instructions. The BPF VM subsystem in the Linux kernel is immensely powerful. Covering it would require a separate article. For now, think of eBPF as some kind of mechanism that magically enables sandboxed loading of injected logic into priveleged contexts from userspace. bpftrace makes use of eBPF to inject dynamic tracing instruments.</description></item><item><title>kexec</title><link>https://binary-eater.github.io/posts/kexec/</link><pubDate>Sun, 10 Dec 2023 21:32:56 -0800</pubDate><guid>https://binary-eater.github.io/posts/kexec/</guid><description>What is kexec? kexec is short for kernel execute. At a high level, it is analogous with the syscall exec. kexec replaces the memory of the currently loaded kernel image and begins executing the newly loaded kernel image. tl;dr it enables users to run new kernels without needing to do a full power cycle of a system.
-What is the value of kexec? Enables a &amp;#34;boot once&amp;#34; flow for testing a potentially problematic kernel.</description></item><item><title>About</title><link>https://binary-eater.github.io/about/</link><pubDate>Sun, 10 Dec 2023 19:35:45 -0800</pubDate><guid>https://binary-eater.github.io/about/</guid><description>I am an open source enthusiast mainly interested in low-level programming and operating systems. My personal interests are mainly in PC-class development and improving the personal computing space in the open source community. On my free time, I mess around with input devices and the stacks related to them.
-For fun, I have worked on the hid-nvidia-shield driver. I started this project after playing some games with a friend and learning that Xbox controllers had first class haptics support on Linux (thanks to the xpad driver made by individuals) while the NVIDIA SHIELD controller I was using did not.</description></item><item><title>Site theme change</title><link>https://binary-eater.github.io/posts/theme_change/</link><pubDate>Sun, 10 Dec 2023 18:23:18 -0800</pubDate><guid>https://binary-eater.github.io/posts/theme_change/</guid><description>Why I changed the theme of my site? When I first started this page, I built my own theme hugo-theme-ghci based on the work done on the hugo-theme-ghci theme. I did this because I dislike the idea of using someone else&amp;#39;s creative work to express myself on a personal site. I am really thankful to people who share themes for this purpose. I just thought back then I could make something more creative that expresses my interests.</description></item><item><title>The Tunnel to Summer, the Exit of Goodbyes</title><link>https://binary-eater.github.io/posts/tunnel_to_summer/</link><pubDate>Sun, 12 Nov 2023 12:44:22 -0800</pubDate><guid>https://binary-eater.github.io/posts/tunnel_to_summer/</guid><description>Natsu e no Tonneru, Sayonara no Deguchi Original work written by
-Hachimoku Mei and illustrated by
-Kukka The movie was directed by
-Tomohisa Taguchi (Bleach: TYBW) Starring
-Ouji Suzuka as Touno Kaoru Iitoyo Marie as Hanashiro Anzu Hatanaka Tasuku as Kaga Shouhei Komiya Arisa as Kawasaki Koharu Terui Haruka as Hanamoto-sensei Koyama Rikiya as Touno&amp;#39;s father Touno Karen as Touno Karen Produced by
-Ryoichiro Matsuo Just for some background, I was out of the country on a business trip and recently returned.</description></item><item><title>Personal Setup</title><link>https://binary-eater.github.io/posts/personal-setup/</link><pubDate>Mon, 03 Jan 2022 19:22:44 -0800</pubDate><guid>https://binary-eater.github.io/posts/personal-setup/</guid><description>Goal of this page This page will contain information on my setup I use for open-source and personal development. This includes both the software and physical sides. Normally, I do not think setups are worth discussing. However, I do think there is something to be gained in this specific case since I currently do not use normal or &amp;#34;out of the box&amp;#34; gear + software stack. Listed below are some of the highlights in my setup that will be expanded on in the near future.</description></item><item><title/><link>https://binary-eater.github.io/description/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://binary-eater.github.io/description/</guid><description>I am a programmer primarily focused on delving into kernel-space programming.
-My secondary interests are programming languages and related concepts.
-I enjoy doing work that generates truly &amp;#34;free&amp;#34; software.</description></item></channel></rss>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Rahul Rameshbabu</title><link>https://binary-eater.github.io/</link><description>Recent content on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 28 Apr 2024 21:53:41 -0700</lastBuildDate><atom:link href="https://binary-eater.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Career Change: From Linux Kernel Networking to Linux Graphics</title><link>https://binary-eater.github.io/posts/job_change/</link><pubDate>Sun, 28 Apr 2024 21:53:41 -0700</pubDate><guid>https://binary-eater.github.io/posts/job_change/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Changing Jobs
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+I wanted to announce that I am changing jobs. In my previous role, I worked at
+NVIDIA as a Linux kernel developer specifically focused on netdev changes for
+the &lt;a href="https://www.nvidia.com/en-us/networking/ethernet-adapters/">ConnectX&lt;/a> and &lt;a href="https://www.nvidia.com/en-us/networking/products/data-processing-unit/">BlueField&lt;/a> products. You can find my relevant work in my
+previous position by &lt;a href="https://lore.kernel.org/netdev/?q=Rahul+Rameshbabu">searching my name on the netdev mailing list archives&lt;/a>.&lt;/p>
+&lt;p>
+I am moving to a new role as part of NVIDIA&amp;#39;s Linux Graphics Team. The team&amp;#39;s
+work involves DRM/KMS, X11 and Wayland UMD work, as well as OpenGL and Vulkan
+support. Documentation related to the work can be found at
+&lt;a href="https://download.nvidia.com/XFree86/Linux-x86_64/">https://download.nvidia.com/XFree86/Linux-x86_64/&lt;/a>.&lt;/p></description></item><item><title>Setting up a minimal git server to support Microsoft SSO using OIDC</title><link>https://binary-eater.github.io/posts/git_oidc/</link><pubDate>Mon, 19 Feb 2024 08:29:43 -0800</pubDate><guid>https://binary-eater.github.io/posts/git_oidc/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Prerequisites
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+This tutorial is less about how to get a bare git server up and running on XYZ
+ecosystem and more about taking an existing setup and providing SSO
+authentication support to it for git over HTTP usage. While the tutorial will
+target Microsoft&amp;#39;s SSO offerings, the concepts discussed can be re-applied to
+any OIDC identity provider. My recommendation is to first work with a tutorial
+that helps you get a basic cgit setup up and running, which you are able to
+clone from. After that, this tutorial should be easy to follow along.&lt;/p></description></item><item><title>Speedrunning setting up a plasma-nm development environment</title><link>https://binary-eater.github.io/posts/plasma-nm-dev/</link><pubDate>Sun, 11 Feb 2024 19:55:59 -0800</pubDate><guid>https://binary-eater.github.io/posts/plasma-nm-dev/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Why did I set up a plasma-nm development environment in the first place?
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;div id="outline-container-headline-2" class="outline-3">
+&lt;h3 id="headline-2">
+Why did I want to contribute changes to plasma-nm?
+&lt;/h3>
+&lt;div id="outline-text-headline-2" class="outline-text-3">
+&lt;p>
+If you have peaked at my GitHub profile or activity, you probably know a couple of
+things about me.&lt;/p>
+&lt;ol>
+&lt;li>I do not use Plasma or GNOME but rather Xmonad.&lt;/li>
+&lt;li>I mostly focus on kernel development and related low-level subjects these
+days.&lt;/li>
+&lt;/ol>
+&lt;p>So why would I bother contributing to &lt;code>plasma-nm&lt;/code>? Well, the company that pays
+me for my day job uses Cisco AnyConnect as the VPN solution. From our company&amp;#39;s
+IT management perspective, Cisco AnyConnect &amp;#34;supports&amp;#34; Windows, macOS, and
+Linux. The Linux client does not meet our needs, and we need to support FreeBSD
+development as well. We depend heavily on the &lt;a href="https://www.infradead.org/openconnect/">openconnect&lt;/a> reverse-engineered
+alternative. The company uses a strict SSO model backed by Microsoft Identity
+Platform services. Support for SSO flows is available through the AnyConnect
+ecosystem through the SAML mechanism, which openconnect has implemented in
+recent years. There are two possible flows/algorithms for the SAML model with
+AnyConnect. One flow involves needing to feed cookies programmatically back into
+&lt;code>libopenconnect&lt;/code> for the authentication browser to succeed. The other flow
+involves redirecting a base64 blob that was generated through an authentication
+process done in a browser like Firefox or Chromium back to a localhost server
+run by openconnect for the sake of IPC with the external browser program. While
+the latter flow is much easier to utilize by users with no additional code
+changes required to be used, Cisco limits the external browser flow to newer
+hardware devices in their product model. This means supporting both flows is an
+important task for providing support for a variety of users.&lt;/p></description></item><item><title>bcm4331 and MacBook WiFi woes</title><link>https://binary-eater.github.io/posts/bcm4331_and_macbook_wifi_woes/</link><pubDate>Mon, 01 Jan 2024 18:09:27 -0800</pubDate><guid>https://binary-eater.github.io/posts/bcm4331_and_macbook_wifi_woes/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Story Time
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+&lt;strong>&lt;strong>DISCLAIMER:&lt;/strong>&lt;/strong> skip this section if you want to get to the core content.&lt;/p>
+&lt;p>
+Before running off thinking this has nothing to do with Linux kernel
+development, we will get there (I promise). However, I think some background
+context is in order. Rewind a year back to LPC 2022, I was attending LPC for the
+very first time (virtually). I was super excited since LPC is basically a
+treasure trove of talks that typically catch my interest. One downside though
+was that I had to primarily follow the eBPF and Networking track since I was
+sponsored by NVIDIA (and more specifically, my team) to attend. Networking is
+interesting in general, but I tend to like topics in any subsystem that are more
+focused on PC-class problems rather than datacenter-class. My job at NVIDIA is
+heavily focused on networking (datacenter-class) in the Linux kernel (but more
+on that in my &lt;a href="https://binary-eater.github.io/about/">about&lt;/a> page).&lt;/p></description></item><item><title>bpftrace</title><link>https://binary-eater.github.io/posts/bpftrace/</link><pubDate>Sun, 10 Dec 2023 21:32:59 -0800</pubDate><guid>https://binary-eater.github.io/posts/bpftrace/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+What is bpftrace?
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+&lt;code>bpftrace&lt;/code> is both a CLI tool and a tracing language that compiles down to Linux
+enhanced Berkeley Packet Filter (eBPF) instructions. The BPF VM subsystem in the
+Linux kernel is immensely powerful. Covering it would require a separate
+article. For now, think of eBPF as some kind of mechanism that magically enables
+sandboxed loading of injected logic into priveleged contexts from userspace.
+&lt;code>bpftrace&lt;/code> makes use of eBPF to inject dynamic tracing instruments. The
+&lt;code>bpftrace&lt;/code> language can work with tranditional static tracing probes as well.&lt;/p></description></item><item><title>kexec</title><link>https://binary-eater.github.io/posts/kexec/</link><pubDate>Sun, 10 Dec 2023 21:32:56 -0800</pubDate><guid>https://binary-eater.github.io/posts/kexec/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+What is kexec?
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+&lt;code>kexec&lt;/code> is short for kernel execute. At a high level, it is analogous with the
+syscall &lt;code>exec&lt;/code>. &lt;code>kexec&lt;/code> replaces the memory of the currently loaded kernel image
+and begins executing the newly loaded kernel image. tl;dr it enables users to
+run new kernels without needing to do a full power cycle of a system.&lt;/p>
+&lt;/div>
+&lt;/div>
+&lt;div id="outline-container-headline-2" class="outline-2">
+&lt;h2 id="headline-2">
+What is the value of kexec?
+&lt;/h2>
+&lt;div id="outline-text-headline-2" class="outline-text-2">
+&lt;ul>
+&lt;li>
+&lt;p>Enables a &amp;#34;boot once&amp;#34; flow for testing a potentially problematic kernel.&lt;/p></description></item><item><title>About</title><link>https://binary-eater.github.io/about/</link><pubDate>Sun, 10 Dec 2023 19:35:45 -0800</pubDate><guid>https://binary-eater.github.io/about/</guid><description>&lt;p>
+I am an open source enthusiast mainly interested in low-level programming and
+operating systems. My personal interests are mainly in PC-class development and
+improving the personal computing space in the open source community. On my free
+time, I mess around with input devices and the stacks related to them.&lt;/p>
+&lt;p>
+For fun, I have worked on the &lt;a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/hid/hid-nvidia-shield.c">hid-nvidia-shield&lt;/a> driver. I started this project
+after playing some games with &lt;a href="https://github.com/PiotrGalusza">a friend&lt;/a> and learning that Xbox controllers had
+first class haptics support on Linux (thanks to the &lt;code>xpad&lt;/code> driver made by
+individuals) while the NVIDIA SHIELD controller I was using did not. We were
+playing &lt;a href="https://store.steampowered.com/app/263300/BlazBlue_Calamity_Trigger/">BlazBlue: Calamity Trigger&lt;/a> at the time, and it was lame to not have
+haptics support in the game on my controller while the Xbox controller had a
+nice experience.&lt;/p></description></item><item><title>Site theme change</title><link>https://binary-eater.github.io/posts/theme_change/</link><pubDate>Sun, 10 Dec 2023 18:23:18 -0800</pubDate><guid>https://binary-eater.github.io/posts/theme_change/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Why I changed the theme of my site?
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+When I first started this page, I built my own theme &lt;a href="https://github.com/Binary-Eater/hugo-theme-ghci">hugo-theme-ghci&lt;/a> based on
+the work done on the &lt;a href="https://github.com/Yukuro/hugo-theme-shell">hugo-theme-ghci&lt;/a> theme. I did this because I dislike the
+idea of using someone else&amp;#39;s creative work to express myself on a personal site.
+I am really thankful to people who share themes for this purpose. I just thought
+back then I could make something more creative that expresses my interests.
+Unfortunately, reality has a nice way of crashing into you like freight train.
+The work it would take for me to build a creative site on top of upstream
+development work I am interested is too much for me right now. In terms of
+programming, I want to make my C and Rust as strong as possible as well as my
+knowledge of computer architecture and algorithms.&lt;/p></description></item><item><title>The Tunnel to Summer, the Exit of Goodbyes</title><link>https://binary-eater.github.io/posts/tunnel_to_summer/</link><pubDate>Sun, 12 Nov 2023 12:44:22 -0800</pubDate><guid>https://binary-eater.github.io/posts/tunnel_to_summer/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Natsu e no Tonneru, Sayonara no Deguchi
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+Original work written by&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://g.co/kgs/gTTxcM">Hachimoku Mei&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;p>and illustrated by&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://twitter.com/hamukukka">Kukka&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;p>The movie was directed by&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://en.wikipedia.org/wiki/Tomohisa_Taguchi">Tomohisa Taguchi&lt;/a> (Bleach: TYBW)&lt;/li>
+&lt;/ul>
+&lt;p>Starring&lt;/p>
+&lt;ul>
+&lt;li>Ouji Suzuka as Touno Kaoru&lt;/li>
+&lt;li>&lt;a href="https://marieiitoyo.amebaownd.com/">Iitoyo Marie&lt;/a> as Hanashiro Anzu&lt;/li>
+&lt;li>&lt;a href="https://en.wikipedia.org/wiki/Tasuku_Hatanaka">Hatanaka Tasuku&lt;/a> as Kaga Shouhei&lt;/li>
+&lt;li>&lt;a href="https://en.wikipedia.org/wiki/Arisa_Komiya">Komiya Arisa&lt;/a> as Kawasaki Koharu&lt;/li>
+&lt;li>&lt;a href="https://en.wikipedia.org/wiki/Haruka_Terui">Terui Haruka&lt;/a> as Hanamoto-sensei&lt;/li>
+&lt;li>&lt;a href="https://en.wikipedia.org/wiki/Rikiya_Koyama">Koyama Rikiya&lt;/a> as Touno&amp;#39;s father&lt;/li>
+&lt;li>&lt;a href="Kobayashi Seiran">Touno Karen&lt;/a> as Touno Karen&lt;/li>
+&lt;/ul>
+&lt;p>Produced by&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://www.animenewsnetwork.com/encyclopedia/people.php?id=23845">Ryoichiro Matsuo&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;img src="./the-tunnel-to-summer-the-exit-of-goodbyes.jpg" alt="./the-tunnel-to-summer-the-exit-of-goodbyes.jpg" title="./the-tunnel-to-summer-the-exit-of-goodbyes.jpg" width="40%"/>
+&lt;p>
+Just for some background, I was out of the country on a business trip and
+recently returned. Most people would choose to take it easy after coming back
+from a trip abroad. However while away, I took a look at the &lt;a href="https://www.tunneltosummer.com/">Tunnel to Summer
+website&lt;/a> and was surprised to find out the movie would start screening in the
+United States right when I returned. For some background, this movie was
+original planned for a US theatrical release in March 2023 by HIDIVE but kept
+getting pushed back. Imagine waiting 10 months to see a movie and missing it
+just because you were away due to business.&lt;/p></description></item><item><title>Personal Setup</title><link>https://binary-eater.github.io/posts/personal-setup/</link><pubDate>Mon, 03 Jan 2022 19:22:44 -0800</pubDate><guid>https://binary-eater.github.io/posts/personal-setup/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+Goal of this page
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>This page will contain information on my setup I use for open-source and
+personal development. This includes both the software and physical sides.
+Normally, I do not think setups are worth discussing. However, I do think there
+is something to be gained in this specific case since I currently do not use
+normal or &amp;#34;out of the box&amp;#34; gear + software stack. Listed below are some of the
+highlights in my setup that will be expanded on in the near future.&lt;/p></description></item><item><title/><link>https://binary-eater.github.io/description/</link><pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate><guid>https://binary-eater.github.io/description/</guid><description>&lt;p>I am a programmer primarily focused on delving into kernel-space programming.&lt;/p>
+&lt;p>
+My secondary interests are programming languages and related concepts.&lt;/p>
+&lt;p>
+I enjoy doing work that generates truly &amp;#34;free&amp;#34; software.&lt;/p></description></item></channel></rss>
