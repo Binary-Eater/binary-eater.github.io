@@ -1,0 +1,162 @@
+---
+title: "Supporting USB Monitor Control in the Linux kernel - Weekend 1: The Plan"
+tags: ["kernel", "display", "hid", "usb monitor control"]
+date: 2025-02-09T17:06:22-08:00
+draft: false
+---
+
+In general, I have decided to try something new with my posts. Previously, I
+would have very large blog posts since I would only start a new post after
+completing a project. This leads to infrequent posts on my site. My [[https://binary-eater.github.io/posts/white_album_2_proton/][last post]]
+was December 14, 2024, which is two months ago from when this post is being
+written. Instead, I will try my best to submit one post per weekend for this
+project. That might leads to posts that are short or just filled with me ranting
+about a particular challenge. However, I think even documenting my struggles can
+have value.
+
+* What is USB Monitor Control?
+
+It is an interface for management and control of monitors over USB. This
+protocol does not support transfering displayed content over USB and is just
+meant for controlling monitor settings. USB-C introduced the concept of
+DisplayPort altmode, which supports passing DisplayPort packets through USB-C.
+While supporting DisplayPort packets, the USB-C interface can still send USB
+data. This opens the possibility for sending monitor control signals using USB
+packets. The USB Monitor Control Class defines a standard way to control
+monitors with USB packets. The Monitor Control Class is a HID Class, which
+standardizes the communication flow even further.
+
+* Previous attempt at USB Monitor Control Class support in Linux
+
+Julius Zint had iterated a bit on the mailing list to support backlight control
+with Apple external displays. These displays utilize the USB Monitor Control
+Class for controlling brightness. I have not explored if these monitors support
+other "Usage" for the Monitor Control Class. However, these patches could not be
+merged due to using the backlight API, which is solely designed for internal
+panels. The API was designed with a mindset that no external panels could have
+backlight controls, and therefore had a userspace guarantee that only one
+backlight device node would ever be enumerated. Using the backlight API for
+external displays is problematic since it can lead to violating that assumption.
+This can potentially lead to either one of the internal panel or external panel
+being configurable by the Wayland compositor (or X server).
+
+[[https://lore.kernel.org/linux-input/20230820094118.20521-2-julius@zint.sh/]]
+
+This unfortunately led to this work being unmergable. I have synced with Julius
+over email about this work. My ask was to continue the work while accrediting
+for the HID handling part. He has given me the green light to do so, which is
+very exciting. On top of which, he has offered to test with his monitor as well.
+I really want to thank him for starting this work.
+
+* Why am I interested in this?
+
+I have been trying to find something useful that resonates with me for writing
+both Rust bindings and Rust drivers in the Linux kernel tree. For the past three
+months, I have been working on Rust bindings and then throwing them away in a
+vicious cycle. We will explore this in more detail soon. I have been pushing
+tiny bits of this into various branches in my [[https://github.com/Binary-Eater/linux][Binary-Eater/linux]] repository.
+Honestly, I wish I did not rush implementing the [[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/hid/hid-nvidia-shield.c][hid-nvidia-shield]] driver. I
+could have written it in Rust instead for fun.
+
+** Implementing I2S support for BCM2711
+
+BCM2711 is the processor found in the Raspberry Pi 4. I was interested in
+implementing the SoC's I2S support for HiFi audio purposes in Rust. I was
+learning how to program the related hardware ring buffers while making sure
+there were no existing drivers upstream that already supported this
+functionality. Unfortunately, the ~bcm2835-i2s~ platform driver exists and
+implements the needed support.
+
+[[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/sound/soc/bcm/bcm2835-i2s.c][sound/soc/bcm/bcm2835-i2s.c]]
+
+** Implementing a Rust driver for the Adafruit JoyBonnet
+
+The [[https://www.adafruit.com/product/3464][Adafruit JoyBonnet]] is a i2c + gpio peripheral that is inexpensive and well
+documented. I was originally considering implementing the needed i2c and gpio
+bindings.
+
+I started some work in the [[https://github.com/Binary-Eater/linux/tree/adafruit-joy-bonnet][adafruit-joy-bonnet]] branch of my kernel repository.
+While working on this, I started using the rust-for-linux Zulip chat. I had a
+concern about the build system infrastructure. In that thread, I learned that
+someone was already working on i2c and gpio bindings in Rust that were not
+posted on the mailing list at the time.
+
++ [[https://rust-for-linux.zulipchat.com/#narrow/channel/291565-Help/topic/Suppressing.20non-fatal.20errors.20when.20developing.20bindings.2Fdriver/near/482221275]]
++ [[https://lore.kernel.org/rust-for-linux/20241218-ncv6336-v1-1-b8d973747f7a@gmail.com/https://lore.kernel.org/rust-for-linux/20241218-ncv6336-v1-1-b8d973747f7a@gmail.com/]]
+
+I did not really feel like working on a driver without the bindings, so that was
+a drop in motivation. I could implement support for the JoyBonnet in C, but I
+would not find that much value to it personally. Could pick up something more
+relevant to me with that time.
+
+** Implementing Rust HID bindings with a Steam Deck reference driver
+
+I have not pushed the work for this to my GitHub repository yet. It was fairly
+minimal and non-functional. I can re-use it for this project. I thought that if
+I keep struggling with dup clause, etc., I could build a [[https://rust-for-linux.com/rust-reference-drivers][reference driver]] for
+some bindings. My issue is I do not find it very interesting to end up
+implementing something that duplicates existing functionality at the end of the
+day.
+
+** Implementing a Rust driver for a Creative SoundBlaster AE-9
+
+This was mostly a "in the planning stage" idea. I scraped the idea once I
+realized since the AE-9 uses the ca0132 codec. The codec already has a HDA patch
+under ~sound/pci/hda/patch_ca0132.c~. The problem here is there is no good way
+to probe the codec from two drivers for different sound cards. It could be done
+in theory, but I am sure there would be enough backlash over dup clause.
+
+* Design Approach
+
+My current mindset is that this effort should be split into phases. These phases
+serve as milestones for the development. A HID driver implementation will be
+needed for handling the HID reports over USB. However, we want to implement a
+new backlight API that is associated per DRM connector. The problem here is
+associating the HID device with the DRM connector backlight. On hotplug, the DRM
+connector hotplug event could populate information into the HID driver. There is
+one issue of ordering. The HID driver may have probed the relevant device before
+the DRM connector hotplug event and vice versa. We need to provide the USB bus
+address and DRM connector information to register a backlight to the HID driver.
+The HID driver will need to help with enumerating the backlight associated with
+the DRM connector.
+
+* Phase 1: Implement the HID component in isolation
+
+Even without exposing a proper userspace interface, implementing the HID
+components for controlling the external display and exposing a driver-specific
+sysfs node for setting the backlight brightness creates a path for a
+self-contained HID driver. HID bindings to register the device and probe HID
+reports will first be needed. I need to verify if there are Rust bindings to
+create arbitary sysfs nodes in-tree or those need to be implemented as well.
+Then, implementing the driver in Rust should be trivial.
+
+* Phase 2: Implement the DRM connector backlight API
+
+For this project to be usable, each DRM connector needs to support a mechanism
+for registering a per-DRM connector backlight API. Ideally, this would look like
+a function that can register an arbitrary set of callbacks for the backlight
+controllable from the DRM connector upon each hotplug event. A userspace DRM API
+will then be needed for per-connector backlight control.
+
+* Phase 3: Work out how to pass the DRM connector backlight bits into the HID driver
+
+This is probably the most complex aspect of the project and can influence design
+choices in phase 2. How do we enable th DRM core stack and HID driver to talk to
+each other? How do we know that both are fully ready to hook into each other?
+
+For getting the two stacks to talk, passing the DRM device and connector
+structures along with connector information such as USB bus would be ideal. For
+this, we might have a function in the HID driver that is exported or use
+[[https://docs.kernel.org/driver-api/auxiliary_bus.html][auxiliary bus]] for this purpose.
+
+There is an ordering issue left to solve. Will the HID device be probed first or
+will the DRM connector hotplug event be triggered first? Honestly, the design
+should not care. Ideally, the driver would do one of two things, 1) complete the
+DRM backlight registration with the already probed HID device or 2) cache the
+DRM components needed for registration till the HID device is probed and ready.
+
+* References
+
++ [[https://www.usb.org/sites/default/files/usbmon11.pdf]]
++ [[https://lore.kernel.org/linux-input/20230820094118.20521-2-julius@zint.sh/]]
++ [[https://lore.kernel.org/lkml/7f2d88de-60c5-e2ff-9b22-acba35cfdfb6@redhat.com/]]
