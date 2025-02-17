@@ -1,0 +1,180 @@
+---
+title: "Supporting USB Monitor Control in the Linux kernel - Weekend 2: Prototyping"
+tags: ["kernel", "display", "hid", "usb monitor control"]
+date: 2025-02-16T17:56:38-08:00
+draft: false
+---
+
+Continuing with my weekend series on my Rust driver development work, I have
+committed some outline code for what a HID driver in Rust should look like and
+an outline for the ~Driver~ trait for the ~hid~ module.
+
+[[https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82]]
+
+* It is really small and seems to nothing. What's the point?
+
+The number one concern I have when building Rust interfaces for the linux kernel
+is having C layers penitrate into the Rust driver. I have seen this with network
+phy drivers in the linux kernel. Lets take a look at this snippet from
+~rust/kernel/net/phy.rs~.
+
+#+BEGIN_SRC rust
+  /// Driver implementation for a particular PHY type.
+  ///
+  /// This trait is used to create a [`DriverVTable`].
+  #[vtable]
+  pub trait Driver {
+      /// Defines certain other features this PHY supports.
+      /// It is a combination of the flags in the [`flags`] module.
+      const FLAGS: u32 = 0;
+
+      /// The friendly name of this PHY type.
+      const NAME: &'static CStr;
+
+      // Code omitted...
+  }
+#+END_SRC
+
+The Rust phy ~Driver~ trait exposes a ~CStr~ variable for phy ~Driver~ trait
+implementers to define. Lets look at the ~CStr~ type declaration under
+~rust/kernel/str.rs~.
+
+#+BEGIN_SRC rust
+  /// A string that is guaranteed to have exactly one `NUL` byte, which is at the
+  /// end.
+  ///
+  /// Used for interoperability with kernel APIs that take C strings.
+  #[repr(transparent)]
+  pub struct CStr([u8]);
+#+END_SRC
+
+This type is purely meant for C string interop and should not be exposed in Rust
+API utilizers in the kernel. Yet here we have the phy ~Driver~ implementation
+exposing ~CStr~ directly in drivers. Drivers ~drivers/net/phy/qt2025.rs~ and
+~drivers/net/phy/ax88796b_rust.rs~ end up needing to utilize the ~c_str!~ macro
+in high-level Rust driver code because of this design choice.
+
+Surprisingly, I had to put a lot of thought into the short amount of code I
+wrote. One of the most time consuming aspects was the implementation of the HID
+device id table used for deciding what devices will be probed against the
+driver. I prototype ~IdTable~ as a static lifetime vector of ~hid::DeviceId~
+under the ~kernel::hid::Driver~ trait.
+
+#+BEGIN_SRC rust
+  const IdTable: &'static Vec<DeviceId>;
+#+END_SRC
+
+Now in the ~hid-monitor-control.rs~ driver implementation, the definition looks
+like below.
+
+#+BEGIN_SRC rust
+  /*
+   * TODO figure out type. If type is too flexible, might make sense to make
+   * the id table a part of the driver macro
+   */
+  const IdTable: &'static Vec<hid::DeviceId> = vec![
+      hid::usb_device! {
+          vendor_id: /* TODO fill in */,
+          device_id: /* TODO fill in */,
+      },
+  ];
+#+END_SRC
+
+This seems obvious. Well, it does after you have seem it. Currently, I am
+noticing an overuse of Rust ~macro_rules!~ in the kernel tree for handling
+arbitrary sized structures in the driver module declaration. ~module_phy_driver~
+has quite a bit of macro logic just for traversing through arbitrary sized
+structures at compile time.
+
+#+BEGIN_SRC rust
+  #[macro_export]
+  macro_rules! module_phy_driver {
+      (@replace_expr $_t:tt $sub:expr) => {$sub};
+
+      (@count_devices $($x:expr),*) => {
+          0usize $(+ $crate::module_phy_driver!(@replace_expr $x 1usize))*
+      };
+
+      (@device_table [$($dev:expr),+]) => {
+          // SAFETY: C will not read off the end of this constant since the last element is zero.
+          const _DEVICE_TABLE: [$crate::bindings::mdio_device_id;
+                                $crate::module_phy_driver!(@count_devices $($dev),+) + 1] = [
+              $($dev.mdio_device_id()),+,
+              $crate::bindings::mdio_device_id {
+                  phy_id: 0,
+                  phy_id_mask: 0
+              }
+          ];
+
+          #[cfg(MODULE)]
+          #[no_mangle]
+          static __mod_device_table__mdio__phydev: [$crate::bindings::mdio_device_id;
+                                                    $crate::module_phy_driver!(@count_devices $($dev),+) + 1] = _DEVICE_TABLE;
+      };
+
+      (drivers: [$($driver:ident),+ $(,)?], device_table: [$($dev:expr),+ $(,)?], $($f:tt)*) => {
+          struct Module {
+              _reg: $crate::net::phy::Registration,
+          }
+
+          $crate::prelude::module! {
+              type: Module,
+              $($f)*
+          }
+
+          const _: () = {
+              static mut DRIVERS: [$crate::net::phy::DriverVTable;
+                                   $crate::module_phy_driver!(@count_devices $($driver),+)] =
+                  [$($crate::net::phy::create_phy_driver::<$driver>()),+];
+
+              impl $crate::Module for Module {
+                  fn init(module: &'static $crate::ThisModule) -> Result<Self> {
+                      // SAFETY: The anonymous constant guarantees that nobody else can access
+                      // the `DRIVERS` static. The array is used only in the C side.
+                      let drivers = unsafe { &mut DRIVERS };
+                      let mut reg = $crate::net::phy::Registration::register(
+                          module,
+                          ::core::pin::Pin::static_mut(drivers),
+                      )?;
+                      Ok(Module { _reg: reg })
+                  }
+              }
+          };
+
+          $crate::module_phy_driver!(@device_table [$($dev),+]);
+      }
+  }
+#+END_SRC
+
+If you need some help understanding the above macro, I recommend taking a look
+at the ~macro_rules!~ section in the official Rust book and the doc comments in
+~rust/kernel/net/phy.rs~.
+
+By using a ~Vec~ in the ~Driver~ trait, I would needing such complexity in the
+~macro_rules!~. Since it has a const static lifetime, hopefully ~rustc~ will be
+able to compile time optimize unrolling the vector even if we do not explicitly
+do the list unrolling at compile time with a macro. If not, there is room for
+improvement with ~rustc~.
+
+A vector has to be used instead of an array because Rust does not permit
+declaring an array of arbitrary length that can then be inferred by the right
+hand side. In C, we can do the following with arrays (snippet taken from
+~drivers/hid/hid-nvidia-shield.c~).
+
+#+BEGIN_SRC c
+static const struct hid_device_id shield_devices[] = {
+	{ HID_BLUETOOTH_DEVICE(USB_VENDOR_ID_NVIDIA,
+			       USB_DEVICE_ID_NVIDIA_THUNDERSTRIKE_CONTROLLER) },
+	{ HID_USB_DEVICE(USB_VENDOR_ID_NVIDIA,
+			 USB_DEVICE_ID_NVIDIA_THUNDERSTRIKE_CONTROLLER) },
+	{ }
+};
+MODULE_DEVICE_TABLE(hid, shield_devices);
+#+END_SRC
+
+The lhs declares a ~hid_device_id[]~ type where the size is defined by the rhs.
+In this case, ~shield_devices~ has a size of 3, including the terminating record
+at the end. This pattern that is common in C cannot be replicated in Rust. Rust
+requires an explicit size for the array declaration. Therefore, a ~Vec~ seems
+like the most comfortable substitute to use given the complexity of list
+unrolling with ~macro_rules!~.
