@@ -1,4 +1,12 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Rahul Rameshbabu</title><link>https://binary-eater.github.io/posts/</link><description>Recent content in Posts on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sat, 14 Dec 2024 15:21:09 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Patching White Album 2 to work with upstream Proton</title><link>https://binary-eater.github.io/posts/white_album_2_proton/</link><pubDate>Sat, 14 Dec 2024 15:21:09 -0800</pubDate><guid>https://binary-eater.github.io/posts/white_album_2_proton/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on Rahul Rameshbabu</title><link>https://binary-eater.github.io/posts/</link><description>Recent content in Posts on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 09 Feb 2025 17:06:22 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 1: The Plan</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control/</link><pubDate>Sun, 09 Feb 2025 17:06:22 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control/</guid><description>&lt;p>
+In general, I have decided to try something new with my posts. Previously, I
+would have very large blog posts since I would only start a new post after
+completing a project. This leads to infrequent posts on my site. My &lt;a href="https://binary-eater.github.io/posts/white_album_2_proton/">last post&lt;/a>
+was December 14, 2024, which is two months ago from when this post is being
+written. Instead, I will try my best to submit one post per weekend for this
+project. That might leads to posts that are short or just filled with me ranting
+about a particular challenge. However, I think even documenting my struggles can
+have value.&lt;/p></description></item><item><title>Patching White Album 2 to work with upstream Proton</title><link>https://binary-eater.github.io/posts/white_album_2_proton/</link><pubDate>Sat, 14 Dec 2024 15:21:09 -0800</pubDate><guid>https://binary-eater.github.io/posts/white_album_2_proton/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
 &lt;h2 id="headline-1">
 Playing White Album 2, one of the highest rated visual novels
 &lt;/h2>
