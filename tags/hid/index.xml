@@ -1,4 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Hid on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/hid/</link><description>Recent content in Hid on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 09 Feb 2025 17:06:22 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/hid/index.xml" rel="self" type="application/rss+xml"/><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 1: The Plan</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control/</link><pubDate>Sun, 09 Feb 2025 17:06:22 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control/</guid><description>&lt;p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Hid on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/hid/</link><description>Recent content in Hid on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sun, 16 Feb 2025 17:56:38 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/hid/index.xml" rel="self" type="application/rss+xml"/><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 2: Prototyping</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_2/</link><pubDate>Sun, 16 Feb 2025 17:56:38 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_2/</guid><description>&lt;p>
+Continuing with my weekend series on my Rust driver development work, I have
+committed some outline code for what a HID driver in Rust should look like and
+an outline for the &lt;code>Driver&lt;/code> trait for the &lt;code>hid&lt;/code> module.&lt;/p>
+&lt;p>
+&lt;a href="https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82">https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82&lt;/a>&lt;/p>
+&lt;div id="outline-container-headline-1" class="outline-2">
+&lt;h2 id="headline-1">
+It is really small and seems to nothing. What&amp;#39;s the point?
+&lt;/h2>
+&lt;div id="outline-text-headline-1" class="outline-text-2">
+&lt;p>
+The number one concern I have when building Rust interfaces for the linux kernel
+is having C layers penitrate into the Rust driver. I have seen this with network
+phy drivers in the linux kernel. Lets take a look at this snippet from
+&lt;code>rust/kernel/net/phy.rs&lt;/code>.&lt;/p></description></item><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 1: The Plan</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control/</link><pubDate>Sun, 09 Feb 2025 17:06:22 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control/</guid><description>&lt;p>
 In general, I have decided to try something new with my posts. Previously, I
 would have very large blog posts since I would only start a new post after
 completing a project. This leads to infrequent posts on my site. My &lt;a href="https://binary-eater.github.io/posts/white_album_2_proton/">last post&lt;/a>

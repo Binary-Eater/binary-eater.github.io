@@ -1,0 +1,142 @@
+<!doctype html><html lang=en-us><head><title>Supporting USB Monitor Control in the Linux kernel - Weekend 2: Prototyping // Rahul Rameshbabu</title>
+<link rel="shortcut icon" href=/favicon.ico><meta charset=utf-8><meta name=generator content="Hugo 0.139.3"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Rahul Rameshbabu"><meta name=description content><link rel=stylesheet href=/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css><meta name=twitter:card content="summary"><meta name=twitter:title content="Supporting USB Monitor Control in the Linux kernel - Weekend 2: Prototyping"><meta name=twitter:description content="Continuing with my weekend series on my Rust driver development work, I have committed some outline code for what a HID driver in Rust should look like and an outline for the Driver trait for the hid module.
+https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82
+It is really small and seems to nothing. What's the point? The number one concern I have when building Rust interfaces for the linux kernel is having C layers penitrate into the Rust driver. I have seen this with network phy drivers in the linux kernel. Lets take a look at this snippet from rust/kernel/net/phy.rs."><meta property="og:url" content="https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_2/"><meta property="og:site_name" content="Rahul Rameshbabu"><meta property="og:title" content="Supporting USB Monitor Control in the Linux kernel - Weekend 2: Prototyping"><meta property="og:description" content="Continuing with my weekend series on my Rust driver development work, I have committed some outline code for what a HID driver in Rust should look like and an outline for the Driver trait for the hid module.
+https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82
+It is really small and seems to nothing. What's the point? The number one concern I have when building Rust interfaces for the linux kernel is having C layers penitrate into the Rust driver. I have seen this with network phy drivers in the linux kernel. Lets take a look at this snippet from rust/kernel/net/phy.rs."><meta property="og:locale" content="en_us"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2025-02-16T17:56:38-08:00"><meta property="article:modified_time" content="2025-02-16T17:56:38-08:00"><meta property="article:tag" content="Kernel"><meta property="article:tag" content="Display"><meta property="article:tag" content="Hid"><meta property="article:tag" content="Usb Monitor Control"></head><body><header class=app-header><a href=https://binary-eater.github.io/><img class=app-header-avatar src=/avatar.jpg alt="Rahul Rameshbabu"></a>
+<span class=app-header-title>Rahul Rameshbabu</span><nav class=app-header-menu><a class=app-header-menu-item href=/>Home</a>
+-
+<a class=app-header-menu-item href=/tags/>Tags</a>
+-
+<a class=app-header-menu-item href=/about/>About</a></nav><p>Binary-Eater: A developer focused on low-level programming</p><div class=app-header-social><a href=https://github.com/Binary-Eater target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github"><title>Github</title><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg>
+</a><a href=https://matrix.to/#/@binary-eater:beater.town target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-message-circle"><title>Matrix</title><path d="M21 11.5a8.38 8.38.0 01-.9 3.8A8.5 8.5.0 0112.5 20a8.38 8.38.0 01-3.8-.9L3 21l1.9-5.7A8.38 8.38.0 014 11.5a8.5 8.5.0 014.7-7.6 8.38 8.38.0 013.8-.9h.5a8.48 8.48.0 018 8v.5z"/></svg></a></div></header><main class=app-container><article class=post><header class=post-header><h1 class=post-title>Supporting USB Monitor Control in the Linux kernel - Weekend 2: Prototyping</h1><div class=post-meta><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+Feb 16, 2025</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock"><title>clock</title><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+4 min read</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+<a class=tag href=https://binary-eater.github.io/tags/kernel/>Kernel</a>
+<a class=tag href=https://binary-eater.github.io/tags/display/>Display</a>
+<a class=tag href=https://binary-eater.github.io/tags/hid/>Hid</a>
+<a class=tag href=https://binary-eater.github.io/tags/usb-monitor-control/>Usb Monitor Control</a></div></div></header><div class=post-content><p>Continuing with my weekend series on my Rust driver development work, I have
+committed some outline code for what a HID driver in Rust should look like and
+an outline for the <code>Driver</code> trait for the <code>hid</code> module.</p><p><a href=https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82>https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82</a></p><div id=outline-container-headline-1 class=outline-2><h2 id=headline-1>It is really small and seems to nothing. What's the point?</h2><div id=outline-text-headline-1 class=outline-text-2><p>The number one concern I have when building Rust interfaces for the linux kernel
+is having C layers penitrate into the Rust driver. I have seen this with network
+phy drivers in the linux kernel. Lets take a look at this snippet from
+<code>rust/kernel/net/phy.rs</code>.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#e6db74>/// Driver implementation for a particular PHY type.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>  <span style=color:#e6db74>///
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>  <span style=color:#e6db74>/// This trait is used to create a [`DriverVTable`].
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>  <span style=color:#75715e>#[vtable]</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>trait</span> Driver {
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>/// Defines certain other features this PHY supports.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>      <span style=color:#e6db74>/// It is a combination of the flags in the [`flags`] module.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>      <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>FLAGS</span>: <span style=color:#66d9ef>u32</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#e6db74>/// The friendly name of this PHY type.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>      <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>NAME</span>: <span style=color:#66d9ef>&amp;</span>&#39;static <span style=color:#a6e22e>CStr</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// Code omitted...
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  }</span></span></code></pre></div></div><p>The Rust phy <code>Driver</code> trait exposes a <code>CStr</code> variable for phy <code>Driver</code> trait
+implementers to define. Lets look at the <code>CStr</code> type declaration under
+<code>rust/kernel/str.rs</code>.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#e6db74>/// A string that is guaranteed to have exactly one `NUL` byte, which is at the
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>  <span style=color:#e6db74>/// end.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>  <span style=color:#e6db74>///
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>  <span style=color:#e6db74>/// Used for interoperability with kernel APIs that take C strings.
+</span></span></span><span style=display:flex><span><span style=color:#e6db74></span>  <span style=color:#75715e>#[repr(transparent)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>CStr</span>([<span style=color:#66d9ef>u8</span>]);</span></span></code></pre></div></div><p>This type is purely meant for C string interop and should not be exposed in Rust
+API utilizers in the kernel. Yet here we have the phy <code>Driver</code> implementation
+exposing <code>CStr</code> directly in drivers. Drivers <code>drivers/net/phy/qt2025.rs</code> and
+<code>drivers/net/phy/ax88796b_rust.rs</code> end up needing to utilize the <code>c_str!</code> macro
+in high-level Rust driver code because of this design choice.</p><p>Surprisingly, I had to put a lot of thought into the short amount of code I
+wrote. One of the most time consuming aspects was the implementation of the HID
+device id table used for deciding what devices will be probed against the
+driver. I prototype <code>IdTable</code> as a static lifetime vector of <code>hid::DeviceId</code>
+under the <code>kernel::hid::Driver</code> trait.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#66d9ef>const</span> IdTable: <span style=color:#66d9ef>&amp;</span>&#39;static Vec<span style=color:#f92672>&lt;</span>DeviceId<span style=color:#f92672>&gt;</span>;</span></span></code></pre></div></div><p>Now in the <code>hid-monitor-control.rs</code> driver implementation, the definition looks
+like below.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * TODO figure out type. If type is too flexible, might make sense to make
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * the id table a part of the driver macro
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   */</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>const</span> IdTable: <span style=color:#66d9ef>&amp;</span>&#39;static Vec<span style=color:#f92672>&lt;</span>hid::DeviceId<span style=color:#f92672>&gt;</span> <span style=color:#f92672>=</span> vec![
+</span></span><span style=display:flex><span>      hid::usb_device! {
+</span></span><span style=display:flex><span>          vendor_id: <span style=color:#75715e>/* TODO fill in */</span>,
+</span></span><span style=display:flex><span>          device_id: <span style=color:#75715e>/* TODO fill in */</span>,
+</span></span><span style=display:flex><span>      },
+</span></span><span style=display:flex><span>  ];</span></span></code></pre></div></div><p>This seems obvious. Well, it does after you have see it. Currently, I am
+noticing an overuse of Rust <code>macro_rules!</code> in the kernel tree for handling
+arbitrary sized structures in the driver module declaration. <code>module_phy_driver</code>
+has quite a bit of macro logic just for traversing through arbitrary sized
+structures at compile time.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#75715e>#[macro_export]</span>
+</span></span><span style=display:flex><span>  macro_rules<span style=color:#f92672>!</span> module_phy_driver {
+</span></span><span style=display:flex><span>      (<span style=color:#f92672>@</span>replace_expr <span style=color:#75715e>$_t</span>:<span style=color:#a6e22e>tt</span> <span style=color:#75715e>$sub</span>:<span style=color:#a6e22e>expr</span>) <span style=color:#f92672>=&gt;</span> {<span style=color:#75715e>$sub</span>};
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      (<span style=color:#f92672>@</span>count_devices <span style=color:#75715e>$($x</span>:<span style=color:#a6e22e>expr</span>),<span style=color:#f92672>*</span>) <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>          <span style=color:#ae81ff>0</span><span style=color:#66d9ef>usize</span> <span style=color:#75715e>$(</span><span style=color:#f92672>+</span> <span style=color:#75715e>$crate</span>::module_phy_driver!(<span style=color:#f92672>@</span>replace_expr <span style=color:#75715e>$x</span> <span style=color:#ae81ff>1</span><span style=color:#66d9ef>usize</span>))<span style=color:#f92672>*</span>
+</span></span><span style=display:flex><span>      };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      (<span style=color:#f92672>@</span>device_table [<span style=color:#75715e>$($dev</span>:<span style=color:#a6e22e>expr</span>),<span style=color:#f92672>+</span>]) <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>          <span style=color:#75715e>// SAFETY: C will not read off the end of this constant since the last element is zero.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>          <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>_DEVICE_TABLE</span>: [<span style=color:#75715e>$crate</span>::bindings::mdio_device_id;
+</span></span><span style=display:flex><span>                                <span style=color:#75715e>$crate</span>::module_phy_driver!(<span style=color:#f92672>@</span>count_devices <span style=color:#75715e>$($dev</span>),<span style=color:#f92672>+</span>) <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>              <span style=color:#75715e>$($dev</span>.mdio_device_id()),<span style=color:#f92672>+</span>,
+</span></span><span style=display:flex><span>              <span style=color:#75715e>$crate</span>::bindings::mdio_device_id {
+</span></span><span style=display:flex><span>                  phy_id: <span style=color:#ae81ff>0</span>,
+</span></span><span style=display:flex><span>                  phy_id_mask: <span style=color:#ae81ff>0</span>
+</span></span><span style=display:flex><span>              }
+</span></span><span style=display:flex><span>          ];
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#75715e>#[cfg(MODULE)]</span>
+</span></span><span style=display:flex><span>          <span style=color:#75715e>#[no_mangle]</span>
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>static</span> __mod_device_table__mdio__phydev: [<span style=color:#75715e>$crate</span>::bindings::mdio_device_id;
+</span></span><span style=display:flex><span>                                                    <span style=color:#75715e>$crate</span>::module_phy_driver!(<span style=color:#f92672>@</span>count_devices <span style=color:#75715e>$($dev</span>),<span style=color:#f92672>+</span>) <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> <span style=color:#66d9ef>_DEVICE_TABLE</span>;
+</span></span><span style=display:flex><span>      };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      (drivers: [<span style=color:#75715e>$($driver</span>:<span style=color:#a6e22e>ident</span>),<span style=color:#f92672>+</span> <span style=color:#75715e>$(,</span>)<span style=color:#f92672>?</span>], device_table: [<span style=color:#75715e>$($dev</span>:<span style=color:#a6e22e>expr</span>),<span style=color:#f92672>+</span> <span style=color:#75715e>$(,</span>)<span style=color:#f92672>?</span>], <span style=color:#75715e>$($f</span>:<span style=color:#a6e22e>tt</span>)<span style=color:#f92672>*</span>) <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>Module</span> {
+</span></span><span style=display:flex><span>              _reg: <span style=color:#75715e>$crate</span>::net::phy::Registration,
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#75715e>$crate</span>::prelude::module! {
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>type</span>: <span style=color:#a6e22e>Module</span>,
+</span></span><span style=display:flex><span>              <span style=color:#75715e>$($f</span>)<span style=color:#f92672>*</span>
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>const</span> _: () <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>mut</span> <span style=color:#66d9ef>DRIVERS</span>: [<span style=color:#75715e>$crate</span>::net::phy::DriverVTable;
+</span></span><span style=display:flex><span>                                   <span style=color:#75715e>$crate</span>::module_phy_driver!(<span style=color:#f92672>@</span>count_devices <span style=color:#75715e>$($driver</span>),<span style=color:#f92672>+</span>)] <span style=color:#f92672>=</span>
+</span></span><span style=display:flex><span>                  [<span style=color:#75715e>$($crate</span>::net::phy::create_phy_driver::<span style=color:#f92672>&lt;</span><span style=color:#75715e>$driver</span><span style=color:#f92672>&gt;</span>()),<span style=color:#f92672>+</span>];
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>impl</span> <span style=color:#75715e>$crate</span>::Module <span style=color:#66d9ef>for</span> Module {
+</span></span><span style=display:flex><span>                  <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>init</span>(module: <span style=color:#66d9ef>&amp;</span>&#39;static <span style=color:#75715e>$crate</span>::ThisModule) -&gt; Result<span style=color:#f92672>&lt;</span>Self<span style=color:#f92672>&gt;</span> {
+</span></span><span style=display:flex><span>                      <span style=color:#75715e>// SAFETY: The anonymous constant guarantees that nobody else can access
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                      <span style=color:#75715e>// the `DRIVERS` static. The array is used only in the C side.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                      <span style=color:#66d9ef>let</span> drivers <span style=color:#f92672>=</span> <span style=color:#66d9ef>unsafe</span> { <span style=color:#f92672>&amp;</span><span style=color:#66d9ef>mut</span> <span style=color:#66d9ef>DRIVERS</span> };
+</span></span><span style=display:flex><span>                      <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> reg <span style=color:#f92672>=</span> <span style=color:#75715e>$crate</span>::net::phy::Registration::register(
+</span></span><span style=display:flex><span>                          module,
+</span></span><span style=display:flex><span>                          ::core::pin::Pin::static_mut(drivers),
+</span></span><span style=display:flex><span>                      )<span style=color:#f92672>?</span>;
+</span></span><span style=display:flex><span>                      Ok(Module { _reg: <span style=color:#a6e22e>reg</span> })
+</span></span><span style=display:flex><span>                  }
+</span></span><span style=display:flex><span>              }
+</span></span><span style=display:flex><span>          };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#75715e>$crate</span>::module_phy_driver!(<span style=color:#f92672>@</span>device_table [<span style=color:#75715e>$($dev</span>),<span style=color:#f92672>+</span>]);
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>  }</span></span></code></pre></div></div><p>If you need some help understanding the above macro, I recommend taking a look
+at the <code>macro_rules!</code> section in the official Rust book and the doc comments in
+<code>rust/kernel/net/phy.rs</code>.</p><p>By using a <code>Vec</code> in the <code>Driver</code> trait, I would needing such complexity in the
+<code>macro_rules!</code>. Since it has a const static lifetime, hopefully <code>rustc</code> will be
+able to compile time optimize unrolling the vector even if we do not explicitly
+do the list unrolling at compile time with a macro. If not, there is room for
+improvement with <code>rustc</code>.</p><p>A vector has to be used instead of an array because Rust does not permit
+declaring an array of arbitrary length that can then be inferred by the right
+hand side. In C, we can do the following with arrays (snippet taken from
+<code>drivers/hid/hid-nvidia-shield.c</code>).</p><div class="src src-c"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span><span style=color:#66d9ef>static</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>struct</span> hid_device_id shield_devices[] <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>	{ <span style=color:#a6e22e>HID_BLUETOOTH_DEVICE</span>(USB_VENDOR_ID_NVIDIA,
+</span></span><span style=display:flex><span>			       USB_DEVICE_ID_NVIDIA_THUNDERSTRIKE_CONTROLLER) },
+</span></span><span style=display:flex><span>	{ <span style=color:#a6e22e>HID_USB_DEVICE</span>(USB_VENDOR_ID_NVIDIA,
+</span></span><span style=display:flex><span>			 USB_DEVICE_ID_NVIDIA_THUNDERSTRIKE_CONTROLLER) },
+</span></span><span style=display:flex><span>	{ }
+</span></span><span style=display:flex><span>};
+</span></span><span style=display:flex><span><span style=color:#a6e22e>MODULE_DEVICE_TABLE</span>(hid, shield_devices);</span></span></code></pre></div></div><p>The lhs declares a <code>hid_device_id[]</code> type where the size is defined by the rhs.
+In this case, <code>shield_devices</code> has a size of 3, including the terminating record
+at the end. This pattern that is common in C cannot be replicated in Rust. Rust
+requires an explicit size for the array declaration. Therefore, a <code>Vec</code> seems
+like the most comfortable substitute to use given the complexity of list
+unrolling with <code>macro_rules!</code>.</p></div></div></div><div class=post-footer></div></article></main></body></html>
