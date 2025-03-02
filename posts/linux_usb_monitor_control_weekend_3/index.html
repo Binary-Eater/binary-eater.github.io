@@ -1,0 +1,296 @@
+<!doctype html><html lang=en-us><head><title>Supporting USB Monitor Control in the Linux kernel - Weekend 3: Bindings // Rahul Rameshbabu</title>
+<link rel="shortcut icon" href=/favicon.ico><meta charset=utf-8><meta name=generator content="Hugo 0.139.3"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Rahul Rameshbabu"><meta name=description content><link rel=stylesheet href=/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css><meta name=twitter:card content="summary"><meta name=twitter:title content="Supporting USB Monitor Control in the Linux kernel - Weekend 3: Bindings"><meta name=twitter:description content="The work for binding the Linux kernel HID interface in C is taking shape. I have two commits related to the work in my tree. The reason the work is split in two was figuring out how to handle the HID device id table as a complex problem on its own compared to the rest of the binding work.
+https://github.com/Binary-Eater/linux/commit/f6dc91a0eb7eaa6eca08bc246da3372e59ef022d https://github.com/Binary-Eater/linux/commit/383a97f7a68fe083013e5f8fc11878361b73a022 DISCLAIMER: The work for this happened on Feb. 22-23, 2025, but I did not have time to write the related blog that weekend."><meta property="og:url" content="https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_3/"><meta property="og:site_name" content="Rahul Rameshbabu"><meta property="og:title" content="Supporting USB Monitor Control in the Linux kernel - Weekend 3: Bindings"><meta property="og:description" content="The work for binding the Linux kernel HID interface in C is taking shape. I have two commits related to the work in my tree. The reason the work is split in two was figuring out how to handle the HID device id table as a complex problem on its own compared to the rest of the binding work.
+https://github.com/Binary-Eater/linux/commit/f6dc91a0eb7eaa6eca08bc246da3372e59ef022d https://github.com/Binary-Eater/linux/commit/383a97f7a68fe083013e5f8fc11878361b73a022 DISCLAIMER: The work for this happened on Feb. 22-23, 2025, but I did not have time to write the related blog that weekend."><meta property="og:locale" content="en_us"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2025-03-02T10:49:38-08:00"><meta property="article:modified_time" content="2025-03-02T10:49:38-08:00"><meta property="article:tag" content="Kernel"><meta property="article:tag" content="Display"><meta property="article:tag" content="Hid"><meta property="article:tag" content="Usb Monitor Control"></head><body><header class=app-header><a href=https://binary-eater.github.io/><img class=app-header-avatar src=/avatar.jpg alt="Rahul Rameshbabu"></a>
+<span class=app-header-title>Rahul Rameshbabu</span><nav class=app-header-menu><a class=app-header-menu-item href=/>Home</a>
+-
+<a class=app-header-menu-item href=/tags/>Tags</a>
+-
+<a class=app-header-menu-item href=/about/>About</a></nav><p>Binary-Eater: A developer focused on low-level programming</p><div class=app-header-social><a href=https://github.com/Binary-Eater target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github"><title>Github</title><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg>
+</a><a href=https://matrix.to/#/@binary-eater:beater.town target=_blank rel="noreferrer noopener me"><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-message-circle"><title>Matrix</title><path d="M21 11.5a8.38 8.38.0 01-.9 3.8A8.5 8.5.0 0112.5 20a8.38 8.38.0 01-3.8-.9L3 21l1.9-5.7A8.38 8.38.0 014 11.5a8.5 8.5.0 014.7-7.6 8.38 8.38.0 013.8-.9h.5a8.48 8.48.0 018 8v.5z"/></svg></a></div></header><main class=app-container><article class=post><header class=post-header><h1 class=post-title>Supporting USB Monitor Control in the Linux kernel - Weekend 3: Bindings</h1><div class=post-meta><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+Mar 2, 2025</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock"><title>clock</title><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+9 min read</div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tag"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+<a class=tag href=https://binary-eater.github.io/tags/kernel/>Kernel</a>
+<a class=tag href=https://binary-eater.github.io/tags/display/>Display</a>
+<a class=tag href=https://binary-eater.github.io/tags/hid/>Hid</a>
+<a class=tag href=https://binary-eater.github.io/tags/usb-monitor-control/>Usb Monitor Control</a></div></div></header><div class=post-content><p>The work for binding the Linux kernel HID interface in C is taking shape. I have
+two commits related to the work in my tree. The reason the work is split in two
+was figuring out how to handle the HID device id table as a complex problem on
+its own compared to the rest of the binding work.</p><ul><li><a href=https://github.com/Binary-Eater/linux/commit/f6dc91a0eb7eaa6eca08bc246da3372e59ef022d>https://github.com/Binary-Eater/linux/commit/f6dc91a0eb7eaa6eca08bc246da3372e59ef022d</a></li><li><a href=https://github.com/Binary-Eater/linux/commit/383a97f7a68fe083013e5f8fc11878361b73a022>https://github.com/Binary-Eater/linux/commit/383a97f7a68fe083013e5f8fc11878361b73a022</a></li></ul><p><strong>DISCLAIMER:</strong> The work for this happened on Feb. 22-23, 2025, but I did not have
+time to write the related blog that weekend.</p><div id=outline-container-headline-1 class=outline-2><h2 id=headline-1>Initial bindings and macro design</h2><div id=outline-text-headline-1 class=outline-text-2><p>The kernel has done a lot to work to simplify the C ffi in Rust signficantly.
+Specifically, the <code>Opaque</code> struct under <code>rust/kernel/types.rs</code> is very helpful.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#75715e>#[repr(transparent)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>Device</span>(Opaque<span style=color:#f92672>&lt;</span>bindings::hid_device<span style=color:#f92672>&gt;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>#[repr(transparent)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>DeviceId</span>(Opaque<span style=color:#f92672>&lt;</span>bindings::hid_device_id<span style=color:#f92672>&gt;</span>);</span></span></code></pre></div></div><p>What we are doing here is defining two single element <a href=https://doc.rust-lang.org/book/ch05-01-defining-structs.html#using-tuple-structs-without-named-fields-to-create-different-types>"tuple structs"</a> where the
+first element is FFI object that is allowed to make guarantees Rust normally
+would not permit. This will be very useful for passing data in and out of the C
+api layer. We use the <code>#[repr(transparent)]</code> directive to ensure the Rust types
+we are declaring will have the same memory layout as the C ffi object types
+being used in the single element tuple structs.</p><p>By guaranteeing the memory layout is the same, we can implement static methods
+for the type as follows.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#66d9ef>impl</span> Device {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>unsafe</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>from_ptr</span><span style=color:#f92672>&lt;</span><span style=color:#a6e22e>&#39;a</span><span style=color:#f92672>&gt;</span>(ptr: <span style=color:#f92672>*</span><span style=color:#66d9ef>mut</span> bindings::hid_device) -&gt; <span style=color:#66d9ef>&amp;</span><span style=color:#a6e22e>&#39;a</span> <span style=color:#a6e22e>mut</span> Self {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>let</span> ptr <span style=color:#f92672>=</span> ptr.cast::<span style=color:#f92672>&lt;</span>Self<span style=color:#f92672>&gt;</span>();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>unsafe</span> { <span style=color:#f92672>&amp;</span><span style=color:#66d9ef>mut</span> <span style=color:#f92672>*</span>ptr };
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>vendor</span>(<span style=color:#f92672>&amp;</span>self) -&gt; <span style=color:#66d9ef>u32</span> {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>let</span> hdev <span style=color:#f92672>=</span> self.<span style=color:#ae81ff>0.</span>get();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>unsafe</span> { (<span style=color:#f92672>*</span>hdev).vendor }
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// Omitted the rest
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>impl</span> DeviceId {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>unsafe</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>from_ptr</span><span style=color:#f92672>&lt;</span><span style=color:#a6e22e>&#39;a</span><span style=color:#f92672>&gt;</span>(ptr: <span style=color:#f92672>*</span><span style=color:#66d9ef>mut</span> bindings::hid_device_id) -&gt; <span style=color:#66d9ef>&amp;</span><span style=color:#a6e22e>&#39;a</span> <span style=color:#a6e22e>mut</span> Self {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>let</span> ptr <span style=color:#f92672>=</span> ptr.cast::<span style=color:#f92672>&lt;</span>Self<span style=color:#f92672>&gt;</span>();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>unsafe</span> { <span style=color:#f92672>&amp;</span><span style=color:#66d9ef>mut</span> <span style=color:#f92672>*</span>ptr };
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>vendor</span>(<span style=color:#f92672>&amp;</span>self) -&gt; <span style=color:#66d9ef>u32</span> {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>let</span> hdev_id <span style=color:#f92672>=</span> self.<span style=color:#ae81ff>0.</span>get();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>unsafe</span> { (<span style=color:#f92672>*</span>hdev_id).vendor }
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e>// Omitted the rest
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  }</span></span></code></pre></div></div><p>We define <code>from_ptr</code> methods that enable the Rust layer to represent the C types
+using the memory layout equivalent Rust types. We then define some Rust getters
+to "safely" access the underlying C data. I need to go back later and add the
+<code>SAFETY</code> comments in the code.</p></div></div><div id=outline-container-headline-2 class=outline-2><h2 id=headline-2>Driver adapters and vtables</h2><div id=outline-text-headline-2 class=outline-text-2><p>The Linux kernel module registration interface is well-designed with regards to
+C semantics. Bridging that over to Rust takes quite a bit of massaging. The rust
+binding code had a habit of utilizing a "adapter" and a "vtable". Lets first
+look at the way HID drivers are instantiated in C before delving into the Rust
+code.</p><div class="src src-c"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span>  <span style=color:#75715e>/**
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * struct hid_driver
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @name: driver name (e.g. &#34;Footech_bar-wheel&#34;)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @id_table: which devices is this driver for (must be non-NULL for probe
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * 	      to be called)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @dyn_list: list of dynamically added device ids
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @dyn_lock: lock protecting @dyn_list
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @match: check if the given device is handled by this driver
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @probe: new device inserted
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @remove: device removed (NULL if not a hot-plug capable driver)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @report_table: on which reports to call raw_event (NULL means all)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @raw_event: if report in report_table, this hook is called (NULL means nop)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @usage_table: on which events to call event (NULL means all)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @event: if usage in usage_table, this hook is called (NULL means nop)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @report: this hook is called after parsing a report (NULL means nop)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @report_fixup: called before report descriptor parsing (NULL means nop)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @input_mapping: invoked on input registering before mapping an usage
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @input_mapped: invoked on input registering after mapping an usage
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @input_configured: invoked just before the device is registered
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @feature_mapping: invoked on feature registering
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @suspend: invoked on suspend (NULL means nop)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @resume: invoked on resume if device was not reset (NULL means nop)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   * @reset_resume: invoked on resume if device was reset (NULL means nop)
+</span></span></span><span style=display:flex><span><span style=color:#75715e>   */</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>struct</span> hid_driver shield_driver <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>  	.name          <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;shield&#34;</span>,
+</span></span><span style=display:flex><span>  	.id_table      <span style=color:#f92672>=</span> shield_devices,
+</span></span><span style=display:flex><span>  	.input_mapping <span style=color:#f92672>=</span> android_input_mapping,
+</span></span><span style=display:flex><span>  	.probe         <span style=color:#f92672>=</span> shield_probe,
+</span></span><span style=display:flex><span>  	.remove        <span style=color:#f92672>=</span> shield_remove,
+</span></span><span style=display:flex><span>  	.raw_event     <span style=color:#f92672>=</span> shield_raw_event,
+</span></span><span style=display:flex><span>  	.driver <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>  		.dev_groups <span style=color:#f92672>=</span> shield_device_groups,
+</span></span><span style=display:flex><span>  	},
+</span></span><span style=display:flex><span>  };</span></span></code></pre></div></div><p>We see that the <code>hid_driver</code> struct instance used for the <code>hid-nvidia-shield</code>
+driver does not instantiate all members of the struct. This is common practice
+for structs used to bind driver functionality. However, this does not play well
+with Rust, which essentially requires all members of a struct to be initialized.
+We will need some involved logic to work around this.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>Adapter</span><span style=color:#f92672>&lt;</span>T: <span style=color:#a6e22e>Driver</span><span style=color:#f92672>&gt;</span> {
+</span></span><span style=display:flex><span>      _p: <span style=color:#a6e22e>PhantomData</span><span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;</span>,
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>impl</span><span style=color:#f92672>&lt;</span>T: <span style=color:#a6e22e>Driver</span><span style=color:#f92672>&gt;</span> Adapter<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;</span> {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>unsafe</span> <span style=color:#66d9ef>extern</span> <span style=color:#e6db74>&#34;C&#34;</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>probe_callback</span>(
+</span></span><span style=display:flex><span>          hdev: <span style=color:#f92672>*</span><span style=color:#66d9ef>mut</span> bindings::hid_device,
+</span></span><span style=display:flex><span>          hdev_id: <span style=color:#f92672>*</span><span style=color:#66d9ef>mut</span> bindings::hid_device_id,
+</span></span><span style=display:flex><span>      ) -&gt; <span style=color:#a6e22e>crate</span>::ffi::c_int {
+</span></span><span style=display:flex><span>          from_result(<span style=color:#f92672>||</span> {
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>let</span> dev <span style=color:#f92672>=</span> <span style=color:#66d9ef>unsafe</span> { Device::from_ptr(hdev) };
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>let</span> dev_id <span style=color:#f92672>=</span> <span style=color:#66d9ef>unsafe</span> { DeviceId::from_ptr(hdev_id) };
+</span></span><span style=display:flex><span>              T::probe(dev, dev_id)<span style=color:#f92672>?</span>;
+</span></span><span style=display:flex><span>              Ok(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>          })
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>unsafe</span> <span style=color:#66d9ef>extern</span> <span style=color:#e6db74>&#34;C&#34;</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>remove_callback</span>(hdev: <span style=color:#f92672>*</span><span style=color:#66d9ef>mut</span> bindings::hid_device,) -&gt; <span style=color:#a6e22e>crate</span>::ffi::c_int {
+</span></span><span style=display:flex><span>          from_result(<span style=color:#f92672>||</span> {
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>let</span> dev <span style=color:#f92672>=</span> <span style=color:#66d9ef>unsafe</span> { Device::from_ptr(hdev) };
+</span></span><span style=display:flex><span>              T::remove(dev)<span style=color:#f92672>?</span>;
+</span></span><span style=display:flex><span>              Ok(<span style=color:#ae81ff>0</span>)
+</span></span><span style=display:flex><span>          })
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>  }</span></span></code></pre></div></div><p>We define an <code>Adapter</code> struct capable of providing C linkage functions for
+feedback to C HID API. We make these C linkage functions call the native Rust
+HID <code>Driver</code> trait methods and provide C style return codes.</p><p>We enabled the Rust HID <code>Driver</code> trait to have a <code>vtable</code> implementation, which
+means trait implementers do not have to define all the trait methods. This means
+that we need to handle the case when HID methods methods are missing. We create
+a <code>DriverVTable</code> type that is essentially mapped to <code>hid_driver</code>. We also a
+<code>Driver</code> trair generic <code>create_hid_driver</code> function to instantiate the wrapped
+<code>hid_driver</code> type.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#75715e>#[repr(transparent)]</span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>DriverVTable</span>(Opaque<span style=color:#f92672>&lt;</span>bindings::hid_driver<span style=color:#f92672>&gt;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#75715e>// SAFETY: `DriverVTable` doesn&#39;t expose any &amp;self method to access internal data, so it&#39;s safe to
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#75715e>// share `&amp;DriverVTable` across execution context boundaries.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>  <span style=color:#66d9ef>unsafe</span> <span style=color:#66d9ef>impl</span> Sync <span style=color:#66d9ef>for</span> DriverVTable {}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>create_hid_driver</span><span style=color:#f92672>&lt;</span>T: <span style=color:#a6e22e>Driver</span><span style=color:#f92672>&gt;</span>(name: <span style=color:#66d9ef>&amp;</span>&#39;static <span style=color:#a6e22e>CStr</span>) -&gt; <span style=color:#a6e22e>DriverVTable</span> {
+</span></span><span style=display:flex><span>      DriverVTable(Opaque::new(bindings::hid_driver {
+</span></span><span style=display:flex><span>          name: <span style=color:#a6e22e>name</span>.as_char_ptr(),
+</span></span><span style=display:flex><span>          id_table: <span style=color:#75715e>/* TODO */</span>,
+</span></span><span style=display:flex><span>          probe: <span style=color:#a6e22e>if</span> T::<span style=color:#66d9ef>HAS_PROBE</span> {
+</span></span><span style=display:flex><span>              Some(Adapter::<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;</span>::probe_callback)
+</span></span><span style=display:flex><span>          } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>              None
+</span></span><span style=display:flex><span>          },
+</span></span><span style=display:flex><span>          remove: <span style=color:#a6e22e>if</span> T::<span style=color:#66d9ef>HAS_REMOVE</span> {
+</span></span><span style=display:flex><span>              Some(Adapter::<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;</span>::remove_callback)
+</span></span><span style=display:flex><span>          } <span style=color:#66d9ef>else</span> {
+</span></span><span style=display:flex><span>              None
+</span></span><span style=display:flex><span>          },
+</span></span><span style=display:flex><span>          <span style=color:#75715e>// SAFETY: The rest is zeroed out to initialize `struct hid_driver`,
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>          <span style=color:#75715e>// sets `Option&lt;&amp;F&gt;` to be `None`.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>          <span style=color:#f92672>..</span><span style=color:#66d9ef>unsafe</span> { core::mem::MaybeUninit::<span style=color:#f92672>&lt;</span>bindings::hid_driver<span style=color:#f92672>&gt;</span>::zeroed().assume_init() }
+</span></span><span style=display:flex><span>      }))
+</span></span><span style=display:flex><span>  }</span></span></code></pre></div></div></div></div><div id=outline-container-headline-3 class=outline-2><h2 id=headline-3>Registering the driver</h2><div id=outline-text-headline-3 class=outline-text-2><p>Normally for a C HID driver, we would call the <code>module_hid_driver</code> macro to
+instantiate the HID driver. Calling C-style macros from Rust is not an option.
+We can traverse that the macro eventually calls the <code>__hid_register_driver</code>
+function, which we will want to call from Rust. Similarly, we will want to call
+<code>hid_unregister_driver</code> when unbinding the driver. Both functions can be found
+in <code>drivers/hid/hid-core.c</code>.</p><p>We will have to utilize a a new struct and macro in Rust to provide the
+equivalent functionality for a Rust HID driver. Lets first explore the
+<code>Registration</code> struct and implementation.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>Registration</span> {
+</span></span><span style=display:flex><span>      driver: <span style=color:#a6e22e>Pin</span><span style=color:#f92672>&lt;&amp;</span>&#39;static <span style=color:#66d9ef>mut</span> DriverVTable<span style=color:#f92672>&gt;</span>,
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>unsafe</span> <span style=color:#66d9ef>impl</span> Send <span style=color:#66d9ef>for</span> Registration {}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>impl</span> Registration {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>pub</span> <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>register</span>(
+</span></span><span style=display:flex><span>          module: <span style=color:#66d9ef>&amp;</span>&#39;static <span style=color:#a6e22e>crate</span>::ThisModule,
+</span></span><span style=display:flex><span>          driver: <span style=color:#a6e22e>Pin</span><span style=color:#f92672>&lt;&amp;</span>&#39;static <span style=color:#66d9ef>mut</span> DriverVTable<span style=color:#f92672>&gt;</span>,
+</span></span><span style=display:flex><span>          name: <span style=color:#66d9ef>&amp;</span>&#39;static <span style=color:#a6e22e>CStr</span>,
+</span></span><span style=display:flex><span>      ) -&gt; Result<span style=color:#f92672>&lt;</span>Self<span style=color:#f92672>&gt;</span> {
+</span></span><span style=display:flex><span>          to_result(<span style=color:#66d9ef>unsafe</span> {
+</span></span><span style=display:flex><span>              bindings::__hid_register_driver(driver.<span style=color:#ae81ff>0.</span>get(), module.<span style=color:#ae81ff>0</span>, name.as_char_ptr())
+</span></span><span style=display:flex><span>          })<span style=color:#f92672>?</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          Ok(Registration { driver })
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>  }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#66d9ef>impl</span> Drop <span style=color:#66d9ef>for</span> Registration {
+</span></span><span style=display:flex><span>      <span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>drop</span>(<span style=color:#f92672>&amp;</span><span style=color:#66d9ef>mut</span> self) {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>unsafe</span> {
+</span></span><span style=display:flex><span>              bindings::hid_unregister_driver(self.driver.<span style=color:#ae81ff>0.</span>get())
+</span></span><span style=display:flex><span>          };
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>  }</span></span></code></pre></div></div><p>The <code>register</code> function is the safe Rust wrapper for the <code>__hid_register_driver</code>
+C call. We essentially use the <code>Register</code> struct for unregistering the driver
+when the driver is no longer binded. We do this by implementing the <code>Drop</code> trait
+and calling <code>hid_unregister_driver</code> in <code>drop</code>.</p><p>Working with the <code>Register</code> struct directly in a Rust HID driver would be
+clunky, so we can instead provide a Rust macro to mask the complexity.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#75715e>#[macro_export]</span>
+</span></span><span style=display:flex><span>  macro_rules<span style=color:#f92672>!</span> module_hid_driver {
+</span></span><span style=display:flex><span>      (driver: <span style=color:#75715e>$($driver</span>:<span style=color:#a6e22e>ident</span>), name: <span style=color:#75715e>$($name</span>:<span style=color:#a6e22e>expr</span>), <span style=color:#75715e>$(</span>f:<span style=color:#a6e22e>tt</span>)<span style=color:#f92672>*</span>) <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>Module</span> {
+</span></span><span style=display:flex><span>              _reg: <span style=color:#75715e>$crate</span>::hid::Registration,
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#75715e>$crate</span>::prelude::module! {
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>type</span>: <span style=color:#a6e22e>Module</span>,
+</span></span><span style=display:flex><span>              name: <span style=color:#75715e>$($name</span>),
+</span></span><span style=display:flex><span>              <span style=color:#75715e>$($f</span>)<span style=color:#f92672>*</span>
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>const</span> _: () <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>mut</span> <span style=color:#66d9ef>DRIVER</span>: <span style=color:#75715e>$crate</span>::hid::DriverVTable <span style=color:#f92672>=</span> <span style=color:#75715e>$($crate</span>::hid::create_hid_driver::<span style=color:#f92672>&lt;</span><span style=color:#75715e>$driver</span><span style=color:#f92672>&gt;</span>(<span style=color:#66d9ef>NAME</span>, <span style=color:#75715e>/* TODO pass ID_TABLE */</span>));
+</span></span><span style=display:flex><span>          };
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>  }</span></span></code></pre></div></div><p>The <code>macro_rules!</code> for <code>module_hid_driver</code> here is very simple. Also, I need to
+make updates to the signature of <code>create_hid_driver</code> due to my changes to device
+ID table handling. We call the prelude <code>module!</code> macro to make the newly define
+<code>Module</code> struct implement what is needed to be a Rust kernel module type.</p></div></div><div id=outline-container-headline-4 class=outline-2><h2 id=headline-4>Dealing with the HID device ID table</h2><div id=outline-text-headline-4 class=outline-text-2><p>Handling the HID device ID table was one of the most architecturally challenging
+aspects of this project for me. I have lost count of the number of design
+patterns I have scratched while trying to settle on how to handle this. To begin
+with, lets take a look at how this is handled in C.</p><div class="src src-c"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span>  <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>struct</span> hid_device_id shield_devices[] <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>  	{ <span style=color:#a6e22e>HID_BLUETOOTH_DEVICE</span>(USB_VENDOR_ID_NVIDIA,
+</span></span><span style=display:flex><span>  			       USB_DEVICE_ID_NVIDIA_THUNDERSTRIKE_CONTROLLER) },
+</span></span><span style=display:flex><span>  	{ <span style=color:#a6e22e>HID_USB_DEVICE</span>(USB_VENDOR_ID_NVIDIA,
+</span></span><span style=display:flex><span>  			 USB_DEVICE_ID_NVIDIA_THUNDERSTRIKE_CONTROLLER) },
+</span></span><span style=display:flex><span>  	{ }
+</span></span><span style=display:flex><span>  };</span></span></code></pre></div></div><p>We have a C style array where we do not explicitly state the size on the
+left-hand side (lhs) and have a "terminating" element in the right-hand side
+(rhs). This design pattern is completely not compatible with Rust. Rust arrays
+<strong>must</strong> declare their explicit size in the left-hand side and do not trivially
+support the terminator pattern. This made the design tricky. I eventually
+converged to using macros to assist with the arbitrary-sized structure.</p><p>The first step was to make the <code>HID_USB_DEVICE</code> equivalent in Rust.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#75715e>#[macro_export]</span>
+</span></span><span style=display:flex><span>  macro_rules<span style=color:#f92672>!</span> usb_device {
+</span></span><span style=display:flex><span>      (vendor: <span style=color:#75715e>$($vendor</span>:<span style=color:#a6e22e>expr</span>), product: <span style=color:#75715e>$($product</span>:<span style=color:#a6e22e>expr</span>)) <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>          DeviceId(Opaque::new(bindings::hid_device_id {
+</span></span><span style=display:flex><span>              bus: <span style=color:#ae81ff>0x3</span>, <span style=color:#75715e>/* BUS_USB */</span>
+</span></span><span style=display:flex><span>              vendor: <span style=color:#75715e>$($vendor</span>),
+</span></span><span style=display:flex><span>              product: <span style=color:#75715e>$($product</span>),
+</span></span><span style=display:flex><span>              <span style=color:#75715e>// SAFETY: The rest is zeroed out to initialize `struct hid_device_id`,
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>              <span style=color:#75715e>// sets `Option&lt;&amp;F&gt;` to be `None`.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>              <span style=color:#f92672>..</span><span style=color:#66d9ef>unsafe</span> { core::mem::MaybeUninit::<span style=color:#f92672>&lt;</span>bindings::hid_device_id<span style=color:#f92672>&gt;</span>::zeroed().assume_init() }
+</span></span><span style=display:flex><span>          }))
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>  }</span></span></code></pre></div></div><p>The <code>usb_device</code> macro serves as the Rust equivalent. To deal with terminating
+the table, I made the following macro for internal use only in the <code>hid</code> Rust
+module.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  macro_rules<span style=color:#f92672>!</span> term {
+</span></span><span style=display:flex><span>      () <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>          DeviceId(Opaque::new(bindings::hid_device_id {
+</span></span><span style=display:flex><span>              <span style=color:#75715e>// SAFETY: The rest is zeroed out to initialize `struct hid_device_id`,
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>              <span style=color:#75715e>// sets `Option&lt;&amp;F&gt;` to be `None`.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>              <span style=color:#f92672>..</span><span style=color:#66d9ef>unsafe</span> { <span style=color:#75715e>$crate</span>::core::mem::MaybeUninit::<span style=color:#f92672>&lt;</span>bindings::hid_device_id<span style=color:#f92672>&gt;</span>::zeroed().assume_init() }
+</span></span><span style=display:flex><span>          }))
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>  }</span></span></code></pre></div></div><p>I realize now that this <code>term</code> macro is useless and will be getting rid of it.
+It's a lot of back and forth on the design. Here is an updated variant of
+<code>module_hid_driver</code> macro for creating a id table structure.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-rust data-lang=rust><span style=display:flex><span>  <span style=color:#75715e>#[macro_export]</span>
+</span></span><span style=display:flex><span>  macro_rules<span style=color:#f92672>!</span> module_hid_driver {
+</span></span><span style=display:flex><span>      (<span style=color:#f92672>@</span>replace_expr <span style=color:#75715e>$_t</span>:<span style=color:#a6e22e>tt</span> <span style=color:#75715e>$sub</span>:<span style=color:#a6e22e>expr</span>) <span style=color:#f92672>=&gt;</span> {<span style=color:#75715e>$sub</span>};
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      (<span style=color:#f92672>@</span>count_devices <span style=color:#75715e>$($x</span>:<span style=color:#a6e22e>expr</span>),<span style=color:#f92672>*</span>) <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>          <span style=color:#ae81ff>0</span><span style=color:#66d9ef>usize</span> <span style=color:#75715e>$(</span><span style=color:#f92672>+</span> <span style=color:#75715e>$crate</span>::module_hid_driver!(<span style=color:#f92672>@</span>replace_expr <span style=color:#75715e>$x</span> <span style=color:#ae81ff>1</span><span style=color:#66d9ef>usize</span>))<span style=color:#f92672>*</span>
+</span></span><span style=display:flex><span>      };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>      (driver: <span style=color:#75715e>$($driver</span>:<span style=color:#a6e22e>ident</span>), id_table: [<span style=color:#75715e>$($dev_id</span>:<span style=color:#a6e22e>expr</span>),<span style=color:#f92672>+</span> <span style=color:#75715e>$(,</span>)<span style=color:#f92672>?</span>], name: <span style=color:#75715e>$($name</span>:<span style=color:#a6e22e>expr</span>), <span style=color:#75715e>$(</span>f:<span style=color:#a6e22e>tt</span>)<span style=color:#f92672>*</span>) <span style=color:#f92672>=&gt;</span> {
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>struct</span> <span style=color:#a6e22e>Module</span> {
+</span></span><span style=display:flex><span>              _reg: <span style=color:#75715e>$crate</span>::hid::Registration,
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#75715e>$crate</span>::prelude::module! {
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>type</span>: <span style=color:#a6e22e>Module</span>,
+</span></span><span style=display:flex><span>              name: <span style=color:#75715e>$($name</span>),
+</span></span><span style=display:flex><span>              <span style=color:#75715e>$($f</span>)<span style=color:#f92672>*</span>
+</span></span><span style=display:flex><span>          }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>          <span style=color:#66d9ef>const</span> _: () <span style=color:#f92672>=</span> {
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>const</span> <span style=color:#66d9ef>NAME</span>: <span style=color:#66d9ef>&amp;</span>&#39;static <span style=color:#a6e22e>Cstr</span> <span style=color:#f92672>=</span> <span style=color:#75715e>$crate</span>::c_str!(<span style=color:#75715e>$($name</span>));
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>ID_TABLE</span>: [<span style=color:#75715e>$crate</span>::bindings::hid_device_id;
+</span></span><span style=display:flex><span>                                <span style=color:#75715e>$crate</span>::module_hid_driver!(<span style=color:#f92672>@</span>count_devices <span style=color:#75715e>$($dev_id</span>),<span style=color:#f92672>+</span>) <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>] <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>                  <span style=color:#75715e>$($dev_id</span>.as_ptr()),<span style=color:#f92672>+</span>,
+</span></span><span style=display:flex><span>                  <span style=color:#75715e>$crate</span>::bindings::hid_device_id {
+</span></span><span style=display:flex><span>                      <span style=color:#75715e>// SAFETY: All is zeroed out to initialize `struct hid_device_id`,
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                      <span style=color:#75715e>// sets `Option&lt;&amp;F&gt;` to be `None`.
+</span></span></span><span style=display:flex><span><span style=color:#75715e></span>                      <span style=color:#f92672>..</span><span style=color:#66d9ef>unsafe</span> { <span style=color:#75715e>$crate</span>::core::mem::MaybeUninit::<span style=color:#f92672>&lt;</span><span style=color:#75715e>$crate</span>::bindings::hid_device_id<span style=color:#f92672>&gt;</span>::zeroed().assume_init() }
+</span></span><span style=display:flex><span>                  },
+</span></span><span style=display:flex><span>              ];
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>              <span style=color:#66d9ef>static</span> <span style=color:#66d9ef>mut</span> <span style=color:#66d9ef>DRIVER</span>: <span style=color:#75715e>$crate</span>::hid::DriverVTable <span style=color:#f92672>=</span> <span style=color:#75715e>$($crate</span>::hid::create_hid_driver::<span style=color:#f92672>&lt;</span><span style=color:#75715e>$driver</span><span style=color:#f92672>&gt;</span>(<span style=color:#66d9ef>NAME</span>, <span style=color:#75715e>/* TODO pass ID_TABLE */</span>));
+</span></span><span style=display:flex><span>          };
+</span></span><span style=display:flex><span>      }
+</span></span><span style=display:flex><span>  }</span></span></code></pre></div></div><p>Truthfully, exposing an array of <code>bindings::hid_device_id</code> is broken. Instead, I
+should build a <code>DeviceId</code> array and pass the raw pointer of the underlying
+<code>Opaque</code> type to the first element to the C API.</p></div></div><div id=outline-container-headline-5 class=outline-2><h2 id=headline-5>Next step: probing</h2><div id=outline-text-headline-5 class=outline-text-2><p>With all this work in place, it should be trivial to start probing HID devices
+and exercise the correctness of the bindings.</p></div></div></div><div class=post-footer></div></article></main></body></html>
