@@ -2,7 +2,6 @@ baseURL = 'https://binary-eater.github.io/'
 languageCode = 'en-us'
 title = "Rahul Rameshbabu"
 theme = 'm10c'
-paginate = 8
 
 [menu]
   [[menu.main]]
@@ -33,3 +32,6 @@ paginate = 8
     icon = "message-circle"
     name = "Matrix"
     url = "https://matrix.to/#/@binary-eater:beater.town"
+
+[pagination]
+  pagerSize = 8
