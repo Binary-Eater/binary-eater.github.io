@@ -1,0 +1,100 @@
+---
+title: "Supporting USB Monitor Control in the Linux kernel - Initial RFC and Updates"
+tags: ["kernel", "display", "hid", "usb monitor control"]
+date: 2025-03-27T20:50:10-07:00
+draft: false
+---
+
+I know my last post was on March 2nd, 2025 and this post is now at the end of
+the month. My dayjob has been busy, I am planning a small backpacking trip for
+April 5-6, and I will be in Japan most of May. However, a lot has happened with
+my work for implementing USB Monitor Control Class support in the Linux kernel
+and architecting support in general for external monitor blacklight support in
+the DRM subsystem.
+
+First of all, I have posted a functional RFC for the HID Rust binding work on
+the Linux kernel mailing list.
+
+  [[https://lore.kernel.org/rust-for-linux/20250313160220.6410-2-sergeantsagara@protonmail.com/]]
+
+This was pretty exciting. I mostly just probed and traced the remove callback
+for the NVIDIA Shield Controller (2017). I chose this device for testing for the
+simple reason of "it was the HID device nearest to me on my messy desk." While
+small, it's a nice first step.
+
+I have the work in its messier form before I squashed changes for a proper patch
+series.
+
+  [[https://github.com/torvalds/linux/compare/master...Binary-Eater:linux:8c0e25d500e3d3031b2d60d208704c14cbaa8891]]
+
+I also have a branch which is cleaned up and contains the patches I posted on
+the mailing list. I plan to reset the ~rust-hid~ branch on top of the
+~rust-hid-rfc~ branch and continue the development on the ~rust-hid~ branch
+based on the feedback I got on the mailing list.
+
+  [[https://github.com/Binary-Eater/linux/tree/rust-hid-rfc]]
+
+Let me quickly discuss the feedback and the next steps that then need to be
+taken.
+
+All the feedback I received on the mailing list was very helpful. Benjamin
+Tissoires gave some great suggestions for general direction for the Rust HID
+abstractions.
+
+In general, starting with a "simple" HID driver and then moving to implementing
+something like USB Monitor Control Class that will need DRM wiring seems to be
+preferable for the Rust HID bindings.
+
+This "simple" driver would only make use of very simple HID API callbacks like
+~.report_fixup()~ and ~.raw_event()~ ideally.
+
+I am looking at implementing a Rust reference driver for the Glorious PC Gaming
+Race mice. One issue though is that all the modern Glorious mouse models that I
+can buy are "version 2". I wouldn't be surprised if the bugs in their HID
+reports were fixed in the newer revisions. It would actually be really helpful
+for me if anyone who already owns a Glorious Model O 2, O- 2, or I 2 mouse can
+share the HID Report Descriptor using ~hid-recorder~ from [[https://gitlab.freedesktop.org/libevdev/hid-tools][hid-tools]] or using
+~hid-decode~ just to collect the parsed report descriptor. More information can
+be found in the [[https://docs.kernel.org/hid/hidintro.html#parsing-hid-report-descriptors][Parsing HID report descriptors section of the Linux kernel
+documentation]].
+
+  1. You can make a public GitHub Gist with this information and mention
+     ~@Binary-Eater~ in a comment, so I get a notification about it.
+  2. You can reach me over [[https://matrix.to/#/@binary-eater:beater.town][Matrix]].
+
+One issue with this reference driver is it does not exercise the need for a
+~.remove()~ callback equivalent. This might be a blessing and a curse. With
+Rust's borrow checker, there is a lot of interest in the kernel community to
+architect paths for automatic resource cleanup. In typical C Linux drivers, a
+common mistake is failing to clean up resources when a fatal error is
+encountered. Being able to somehow "automagically" handle this while still
+giving developers control over allocations and resource management to a degree
+would be the perfect balance for kernel-mode drivers. Benjamin Tissoires gave
+the following feedback in the review.
+
+#+BEGIN_QUOTE
+I wonder however how and if we could enforce the remove() to be
+automated by the binding or rust, to not have to deal with resource
+leaking. Because the removal part, especially on failure, is the hardest
+part.
+#+END_QUOTE
+
+The reason I hesitated with doing this initially is due to some limitations in
+Rust's ~Drop~ trait. One of the biggest caveats is it's not well suited for
+ordering resource cleanup and describing a chain of dependencies. Here is an
+example I provide on the mailing list.
+
+  [[https://lore.kernel.org/rust-for-linux/87frjdhaii.fsf@protonmail.com/]]
+
+I did get some useful feedback from Daniel Brooks on this topic. I haven't
+responded yet because I am exploring the kernel's [[https://rust.docs.kernel.org/kernel/devres/struct.Devres.html][Devres]] and [[https://rust.docs.kernel.org/kernel/revocable/struct.Revocable.html][Revocable]] support
+in Rust and seeing if that can provide a solution.
+
+I learned from Danilo Krummrich that, on the Rust for Linux side, there are a
+lot more generalized in-tree abstractions for many of the utilities I
+implemented for the Rust HID bindings myself. I will be making use of the
+in-tree helpers in my next revision.
+
+Anyways, I am hoping to make more progress hopefully by the weekend of April
+11-12. I am also hoping to have additional time I normally would not have to
+work on this during nights I am on vacation in May.
