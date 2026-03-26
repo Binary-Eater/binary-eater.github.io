@@ -7,7 +7,9 @@ draft: false
 I am an open source enthusiast mainly interested in low-level programming and
 operating systems. My personal interests are mainly in PC-class development and
 improving the personal computing space in the open source community. On my free
-time, I mess around with input devices and the stacks related to them.
+time, I mess around with input devices and the stacks related to them. I also
+enjoy gaming on Linux and have done work patching [[https://en.wikipedia.org/wiki/White_Album_2][White Album 2]] for use with
+[[https://github.com/ValveSoftware/Proton][Proton]]. More recently, I have been learning Vulkan and picking up Rust.
 
 For fun, I have worked on the [[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/hid/hid-nvidia-shield.c][hid-nvidia-shield]] driver. I started this project
 after playing some games with [[https://github.com/PiotrGalusza][a friend]] and learning that Xbox controllers had
@@ -17,18 +19,15 @@ playing [[https://store.steampowered.com/app/263300/BlazBlue_Calamity_Trigger/][
 haptics support in the game on my controller while the Xbox controller had a
 nice experience.
 
-For my work at NVIDIA, I do specialized work regarding [[https://en.wikipedia.org/wiki/Precision_Time_Protocol][IEEE 1588 PTP]] and other
-timestamping application support in the [[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/net/ethernet/mellanox/mlx5/core][upstream mlx5 netdev driver]] for [[https://www.nvidia.com/en-us/networking/ethernet-adapters/][NVIDIA's
-Mellanox ConnectX NIC product line]]. The mlx5 driver is a large driver due to
-the various enterprise networking applications supported by our family of
-devices. I work on a fairly small part of the driver, mainly components
-involving PTP and recently MACsec these days. If you are interested in how to
-write arbitrary userspace applications that can take advantage of various
-timestamping information provided by the kernel and potentially your networking
-hardware, I would take a look at the [[https://docs.kernel.org/networking/timestamping.html][related kernel documentation]]. I was at
-[[https://netdevconf.info/0x17/][NetDevConfx17 in Vancouver]] on behalf of NVIDIA, and there was an [[https://netdevconf.info/0x17/sessions/talk/so_timestamping-powering-fleetwide-rpc-monitoring.html][interesting
-talk by Willem de Brujin]] (upstream kernel socket timestamping maintainer and
-kernel developer at Google) on this subject as well.
+For my work at NVIDIA, I am part of the Linux Graphics Team. The team's work
+involves DRM/KMS, X11 and Wayland UMD work, as well as OpenGL and Vulkan
+support. I tend to enjou triaging and fixing display related issues, but in
+reality I would like to have a diverse understanding of various engines of the
+GPU for both rendering, presentation, and scanout purposes. Previously, I spent
+two years on NVIDIA's Linux kernel netdev team, working on [[https://en.wikipedia.org/wiki/Precision_Time_Protocol][IEEE 1588 PTP]],
+MACsec, and other components in the [[https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/net/ethernet/mellanox/mlx5/core][upstream mlx5 netdev driver]] for the [[https://www.nvidia.com/en-us/networking/ethernet-adapters/][ConnectX]]
+and [[https://www.nvidia.com/en-us/networking/products/data-processing-unit/][BlueField]] products. You can find my relevant work from that period by
+[[https://lore.kernel.org/netdev/?q=Rahul+Rameshbabu][searching my name on the netdev mailing list archives]].
 
 I do enjoy peeking around the datacenter class open source development space,
 since some of the work there can be re-used for personal computing. An example
