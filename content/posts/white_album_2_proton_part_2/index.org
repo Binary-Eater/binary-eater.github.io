@@ -26,8 +26,8 @@ avoided the crash but meant giving up DXVK.
 [[./no-subtitles.png]]
 
 I wanted to do better than that. Rather than choosing between subtitles and
-DXVK, I decided to look at the subtitle DLL's [[https://github.com/Binary-Eater/WA2-subtitles][source code]] and fix the
-underlying bugs.
+DXVK, I decided to look at the subtitle DLL's [[https://github.com/TodokanaiTL/subtitles][source code]] and fix the underlying
+bugs.
 
 * COM reference counting done wrong
 
