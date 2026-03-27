@@ -22,8 +22,8 @@ had fixed the crash but silently broken subtitle rendering. This was reported in
 <a href=https://github.com/Binary-Eater/WhiteAlbum2-Proton-patch-scripts/issues/1>an issue</a> on my patch scripts repository. The reporter's workaround was to
 disable DXVK entirely with <code>PROTON_USE_WINED3D=1</code> and use a DLL override, which
 avoided the crash but meant giving up DXVK.</p><img src=./no-subtitles.png alt=./no-subtitles.png title=./no-subtitles.png width=80%><p>I wanted to do better than that. Rather than choosing between subtitles and
-DXVK, I decided to look at the subtitle DLL's <a href=https://github.com/Binary-Eater/WA2-subtitles>source code</a> and fix the
-underlying bugs.</p></div></div><div id=outline-container-headline-2 class=outline-2><h2 id=headline-2>COM reference counting done wrong</h2><div id=outline-text-headline-2 class=outline-text-2><p>The root cause of the crash from Part 1 was a violation of Microsoft's <a href=https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release>COM
+DXVK, I decided to look at the subtitle DLL's <a href=https://github.com/TodokanaiTL/subtitles>source code</a> and fix the underlying
+bugs.</p></div></div><div id=outline-container-headline-2 class=outline-2><h2 id=headline-2>COM reference counting done wrong</h2><div id=outline-text-headline-2 class=outline-text-2><p>The root cause of the crash from Part 1 was a violation of Microsoft's <a href=https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release>COM
 reference counting contract</a> in the subtitle DLL's wrapper classes. The
 <code>Direct3DWrapper</code> and <code>Direct3DDeviceWrapper</code> classes implement <code>IUnknown::Release</code>
 by forwarding the call to the wrapped object, but then unconditionally deleting
