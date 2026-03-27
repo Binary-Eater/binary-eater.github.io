@@ -1,50 +1,50 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kernel on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/kernel/</link><description>Recent content in Kernel on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Thu, 27 Mar 2025 20:50:10 -0700</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/kernel/index.xml" rel="self" type="application/rss+xml"/><item><title>Supporting USB Monitor Control in the Linux kernel - Initial RFC and Updates</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control_initial_rfc/</link><pubDate>Thu, 27 Mar 2025 20:50:10 -0700</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control_initial_rfc/</guid><description>&lt;p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Kernel on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/kernel/</link><description>Recent content in Kernel on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Thu, 27 Mar 2025 20:50:10 -0700</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/kernel/index.xml" rel="self" type="application/rss+xml"/><item><title>Supporting USB Monitor Control in the Linux kernel - Initial RFC and Updates</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control_initial_rfc/</link><pubDate>Thu, 27 Mar 2025 20:50:10 -0700</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control_initial_rfc/</guid><description>&lt;p&gt;
 I know my last post was on March 2nd, 2025 and this post is now at the end of
 the month. My dayjob has been busy, I am planning a small backpacking trip for
 April 5-6, and I will be in Japan most of May. However, a lot has happened with
 my work for implementing USB Monitor Control Class support in the Linux kernel
 and architecting support in general for external monitor blacklight support in
-the DRM subsystem.&lt;/p></description></item><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 3: Bindings</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_3/</link><pubDate>Sun, 02 Mar 2025 10:49:38 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_3/</guid><description>&lt;p>
+the DRM subsystem.&lt;/p&gt;</description></item><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 3: Bindings</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_3/</link><pubDate>Sun, 02 Mar 2025 10:49:38 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_3/</guid><description>&lt;p&gt;
 The work for binding the Linux kernel HID interface in C is taking shape. I have
 two commits related to the work in my tree. The reason the work is split in two
 was figuring out how to handle the HID device id table as a complex problem on
-its own compared to the rest of the binding work.&lt;/p>
-&lt;ul>
-&lt;li>&lt;a href="https://github.com/Binary-Eater/linux/commit/f6dc91a0eb7eaa6eca08bc246da3372e59ef022d">https://github.com/Binary-Eater/linux/commit/f6dc91a0eb7eaa6eca08bc246da3372e59ef022d&lt;/a>&lt;/li>
-&lt;li>&lt;a href="https://github.com/Binary-Eater/linux/commit/383a97f7a68fe083013e5f8fc11878361b73a022">https://github.com/Binary-Eater/linux/commit/383a97f7a68fe083013e5f8fc11878361b73a022&lt;/a>&lt;/li>
-&lt;/ul>
-&lt;p>&lt;strong>DISCLAIMER:&lt;/strong> The work for this happened on Feb. 22-23, 2025, but I did not have
-time to write the related blog that weekend.&lt;/p></description></item><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 2: Prototyping</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_2/</link><pubDate>Sun, 16 Feb 2025 17:56:38 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_2/</guid><description>&lt;p>
+its own compared to the rest of the binding work.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href="https://github.com/Binary-Eater/linux/commit/f6dc91a0eb7eaa6eca08bc246da3372e59ef022d"&gt;https://github.com/Binary-Eater/linux/commit/f6dc91a0eb7eaa6eca08bc246da3372e59ef022d&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href="https://github.com/Binary-Eater/linux/commit/383a97f7a68fe083013e5f8fc11878361b73a022"&gt;https://github.com/Binary-Eater/linux/commit/383a97f7a68fe083013e5f8fc11878361b73a022&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;DISCLAIMER:&lt;/strong&gt; The work for this happened on Feb. 22-23, 2025, but I did not have
+time to write the related blog that weekend.&lt;/p&gt;</description></item><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 2: Prototyping</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_2/</link><pubDate>Sun, 16 Feb 2025 17:56:38 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control_weekend_2/</guid><description>&lt;p&gt;
 Continuing with my weekend series on my Rust driver development work, I have
 committed some outline code for what a HID driver in Rust should look like and
-an outline for the &lt;code>Driver&lt;/code> trait for the &lt;code>hid&lt;/code> module.&lt;/p>
-&lt;p>
-&lt;a href="https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82">https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82&lt;/a>&lt;/p>
-&lt;div id="outline-container-headline-1" class="outline-2">
-&lt;h2 id="headline-1">
+an outline for the &lt;code&gt;Driver&lt;/code&gt; trait for the &lt;code&gt;hid&lt;/code&gt; module.&lt;/p&gt;
+&lt;p&gt;
+&lt;a href="https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82"&gt;https://github.com/Binary-Eater/linux/commit/5072473328d3448e20a1cab43f6c23808af75a82&lt;/a&gt;&lt;/p&gt;
+&lt;div id="outline-container-headline-1" class="outline-2"&gt;
+&lt;h2 id="headline-1"&gt;
 It is really small and seems to nothing. What&amp;#39;s the point?
-&lt;/h2>
-&lt;div id="outline-text-headline-1" class="outline-text-2">
-&lt;p>
+&lt;/h2&gt;
+&lt;div id="outline-text-headline-1" class="outline-text-2"&gt;
+&lt;p&gt;
 The number one concern I have when building Rust interfaces for the linux kernel
 is having C layers penitrate into the Rust driver. I have seen this with network
 phy drivers in the linux kernel. Lets take a look at this snippet from
-&lt;code>rust/kernel/net/phy.rs&lt;/code>.&lt;/p></description></item><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 1: The Plan</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control/</link><pubDate>Sun, 09 Feb 2025 17:06:22 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control/</guid><description>&lt;p>
+&lt;code&gt;rust/kernel/net/phy.rs&lt;/code&gt;.&lt;/p&gt;</description></item><item><title>Supporting USB Monitor Control in the Linux kernel - Weekend 1: The Plan</title><link>https://binary-eater.github.io/posts/linux_usb_monitor_control/</link><pubDate>Sun, 09 Feb 2025 17:06:22 -0800</pubDate><guid>https://binary-eater.github.io/posts/linux_usb_monitor_control/</guid><description>&lt;p&gt;
 In general, I have decided to try something new with my posts. Previously, I
 would have very large blog posts since I would only start a new post after
-completing a project. This leads to infrequent posts on my site. My &lt;a href="https://binary-eater.github.io/posts/white_album_2_proton/">last post&lt;/a>
+completing a project. This leads to infrequent posts on my site. My &lt;a href="https://binary-eater.github.io/posts/white_album_2_proton/"&gt;last post&lt;/a&gt;
 was December 14, 2024, which is two months ago from when this post is being
 written. Instead, I will try my best to submit one post per weekend for this
 project. That might leads to posts that are short or just filled with me ranting
 about a particular challenge. However, I think even documenting my struggles can
-have value.&lt;/p></description></item><item><title>bcm4331 and MacBook WiFi woes</title><link>https://binary-eater.github.io/posts/bcm4331_and_macbook_wifi_woes/</link><pubDate>Mon, 01 Jan 2024 18:09:27 -0800</pubDate><guid>https://binary-eater.github.io/posts/bcm4331_and_macbook_wifi_woes/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
-&lt;h2 id="headline-1">
+have value.&lt;/p&gt;</description></item><item><title>bcm4331 and MacBook WiFi woes</title><link>https://binary-eater.github.io/posts/bcm4331_and_macbook_wifi_woes/</link><pubDate>Mon, 01 Jan 2024 18:09:27 -0800</pubDate><guid>https://binary-eater.github.io/posts/bcm4331_and_macbook_wifi_woes/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2"&gt;
+&lt;h2 id="headline-1"&gt;
 Story Time
-&lt;/h2>
-&lt;div id="outline-text-headline-1" class="outline-text-2">
-&lt;p>
-&lt;strong>&lt;strong>DISCLAIMER:&lt;/strong>&lt;/strong> skip this section if you want to get to the core content.&lt;/p>
-&lt;p>
+&lt;/h2&gt;
+&lt;div id="outline-text-headline-1" class="outline-text-2"&gt;
+&lt;p&gt;
+&lt;strong&gt;&lt;strong&gt;DISCLAIMER:&lt;/strong&gt;&lt;/strong&gt; skip this section if you want to get to the core content.&lt;/p&gt;
+&lt;p&gt;
 Before running off thinking this has nothing to do with Linux kernel
 development, we will get there (I promise). However, I think some background
 context is in order. Rewind a year back to LPC 2022, I was attending LPC for the
@@ -55,35 +55,35 @@ sponsored by NVIDIA (and more specifically, my team) to attend. Networking is
 interesting in general, but I tend to like topics in any subsystem that are more
 focused on PC-class problems rather than datacenter-class. My job at NVIDIA is
 heavily focused on networking (datacenter-class) in the Linux kernel (but more
-on that in my &lt;a href="https://binary-eater.github.io/about/">about&lt;/a> page).&lt;/p></description></item><item><title>bpftrace</title><link>https://binary-eater.github.io/posts/bpftrace/</link><pubDate>Sun, 10 Dec 2023 21:32:59 -0800</pubDate><guid>https://binary-eater.github.io/posts/bpftrace/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
-&lt;h2 id="headline-1">
+on that in my &lt;a href="https://binary-eater.github.io/about/"&gt;about&lt;/a&gt; page).&lt;/p&gt;</description></item><item><title>bpftrace</title><link>https://binary-eater.github.io/posts/bpftrace/</link><pubDate>Sun, 10 Dec 2023 21:32:59 -0800</pubDate><guid>https://binary-eater.github.io/posts/bpftrace/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2"&gt;
+&lt;h2 id="headline-1"&gt;
 What is bpftrace?
-&lt;/h2>
-&lt;div id="outline-text-headline-1" class="outline-text-2">
-&lt;p>
-&lt;code>bpftrace&lt;/code> is both a CLI tool and a tracing language that compiles down to Linux
+&lt;/h2&gt;
+&lt;div id="outline-text-headline-1" class="outline-text-2"&gt;
+&lt;p&gt;
+&lt;code&gt;bpftrace&lt;/code&gt; is both a CLI tool and a tracing language that compiles down to Linux
 enhanced Berkeley Packet Filter (eBPF) instructions. The BPF VM subsystem in the
 Linux kernel is immensely powerful. Covering it would require a separate
 article. For now, think of eBPF as some kind of mechanism that magically enables
 sandboxed loading of injected logic into priveleged contexts from userspace.
-&lt;code>bpftrace&lt;/code> makes use of eBPF to inject dynamic tracing instruments. The
-&lt;code>bpftrace&lt;/code> language can work with tranditional static tracing probes as well.&lt;/p></description></item><item><title>kexec</title><link>https://binary-eater.github.io/posts/kexec/</link><pubDate>Sun, 10 Dec 2023 21:32:56 -0800</pubDate><guid>https://binary-eater.github.io/posts/kexec/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
-&lt;h2 id="headline-1">
+&lt;code&gt;bpftrace&lt;/code&gt; makes use of eBPF to inject dynamic tracing instruments. The
+&lt;code&gt;bpftrace&lt;/code&gt; language can work with tranditional static tracing probes as well.&lt;/p&gt;</description></item><item><title>kexec</title><link>https://binary-eater.github.io/posts/kexec/</link><pubDate>Sun, 10 Dec 2023 21:32:56 -0800</pubDate><guid>https://binary-eater.github.io/posts/kexec/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2"&gt;
+&lt;h2 id="headline-1"&gt;
 What is kexec?
-&lt;/h2>
-&lt;div id="outline-text-headline-1" class="outline-text-2">
-&lt;p>
-&lt;code>kexec&lt;/code> is short for kernel execute. At a high level, it is analogous with the
-syscall &lt;code>exec&lt;/code>. &lt;code>kexec&lt;/code> replaces the memory of the currently loaded kernel image
+&lt;/h2&gt;
+&lt;div id="outline-text-headline-1" class="outline-text-2"&gt;
+&lt;p&gt;
+&lt;code&gt;kexec&lt;/code&gt; is short for kernel execute. At a high level, it is analogous with the
+syscall &lt;code&gt;exec&lt;/code&gt;. &lt;code&gt;kexec&lt;/code&gt; replaces the memory of the currently loaded kernel image
 and begins executing the newly loaded kernel image. tl;dr it enables users to
-run new kernels without needing to do a full power cycle of a system.&lt;/p>
-&lt;/div>
-&lt;/div>
-&lt;div id="outline-container-headline-2" class="outline-2">
-&lt;h2 id="headline-2">
+run new kernels without needing to do a full power cycle of a system.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-headline-2" class="outline-2"&gt;
+&lt;h2 id="headline-2"&gt;
 What is the value of kexec?
-&lt;/h2>
-&lt;div id="outline-text-headline-2" class="outline-text-2">
-&lt;ul>
-&lt;li>
-&lt;p>Enables a &amp;#34;boot once&amp;#34; flow for testing a potentially problematic kernel.&lt;/p></description></item></channel></rss>
+&lt;/h2&gt;
+&lt;div id="outline-text-headline-2" class="outline-text-2"&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;Enables a &amp;#34;boot once&amp;#34; flow for testing a potentially problematic kernel.&lt;/p&gt;</description></item></channel></rss>

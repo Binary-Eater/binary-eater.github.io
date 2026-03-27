@@ -1,15 +1,25 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Wine on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/wine/</link><description>Recent content in Wine on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Sat, 14 Dec 2024 15:21:09 -0800</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/wine/index.xml" rel="self" type="application/rss+xml"/><item><title>Patching White Album 2 to work with upstream Proton</title><link>https://binary-eater.github.io/posts/white_album_2_proton/</link><pubDate>Sat, 14 Dec 2024 15:21:09 -0800</pubDate><guid>https://binary-eater.github.io/posts/white_album_2_proton/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2">
-&lt;h2 id="headline-1">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Wine on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/wine/</link><description>Recent content in Wine on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-us</language><lastBuildDate>Thu, 26 Mar 2026 00:00:00 -0700</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/wine/index.xml" rel="self" type="application/rss+xml"/><item><title>Patching White Album 2 for Proton Part 2: Fixing Subtitles and Switching Codecs</title><link>https://binary-eater.github.io/posts/white_album_2_proton_part_2/</link><pubDate>Thu, 26 Mar 2026 00:00:00 -0700</pubDate><guid>https://binary-eater.github.io/posts/white_album_2_proton_part_2/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2"&gt;
+&lt;h2 id="headline-1"&gt;
+Revisiting the d3d9.dll from Part 1
+&lt;/h2&gt;
+&lt;div id="outline-text-headline-1" class="outline-text-2"&gt;
+&lt;p&gt;
+In my &lt;a href="https://binary-eater.github.io/posts/white_album_2_proton/"&gt;previous post&lt;/a&gt;, I described debugging a crash in White Album 2 caused
+by a vendored &lt;code&gt;d3d9.dll&lt;/code&gt; that was corrupting the &lt;code&gt;lpVtbl&lt;/code&gt; of a COM object during
+&lt;code&gt;IDirect3DDevice9_Release&lt;/code&gt;. My fix at the time was simple: move the DLL out of
+the game&amp;#39;s loading path so DXVK&amp;#39;s &lt;code&gt;d3d9.dll&lt;/code&gt; would be used directly. The game
+stopped crashing and I could play through the visual novel on my Steam Deck.&lt;/p&gt;</description></item><item><title>Patching White Album 2 to work with upstream Proton</title><link>https://binary-eater.github.io/posts/white_album_2_proton/</link><pubDate>Sat, 14 Dec 2024 15:21:09 -0800</pubDate><guid>https://binary-eater.github.io/posts/white_album_2_proton/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2"&gt;
+&lt;h2 id="headline-1"&gt;
 Playing White Album 2, one of the highest rated visual novels
-&lt;/h2>
-&lt;div id="outline-text-headline-1" class="outline-text-2">
-&lt;p>
+&lt;/h2&gt;
+&lt;div id="outline-text-headline-1" class="outline-text-2"&gt;
+&lt;p&gt;
 White Album 2 is a famous visual novel that rivals Steins;Gate and Muv-Luv in
 visual novel rankings. Kinoko Nasu&amp;#39;s famous visual novels are surprisingly not
 as high in the rankings as this novel. The title is probably not as well known
 outside of Japan due to lack of an international release and fan translation
 only being recently complete (kudos to everyone who contributed to the
-&lt;code>TodokanaiTL&lt;/code> project). I was first introduced to White Album 2 through the form
+&lt;code&gt;TodokanaiTL&lt;/code&gt; project). I was first introduced to White Album 2 through the form
 of its anime adaptation in late 2013, while I was still in high school. I found
 the story compelling but found it to be incomplete. Then, I searched if the show
 would ever have a second season. This search showed me that the anime came from
@@ -19,14 +29,14 @@ could not play White Album 2 at the time due to a lack of English translations
 and difficulty of acquiring the software. White Album 2 Extended Edition is only
 sold in physical copies in Japan from what I can tell. Moving onto college and
 focusing my career around open source Linux programming left my quite busy for
-the next 10 years. During that time, the &lt;code>TodokanaiTL&lt;/code> project made significant
+the next 10 years. During that time, the &lt;code&gt;TodokanaiTL&lt;/code&gt; project made significant
 progress and eventually finished translations for the main story and after story
-content. As I tried to follow the project&amp;#39;s documentation for using &lt;code>wine&lt;/code> with
-the game, I found the experience to be subpar. Using &lt;code>dxvk&lt;/code> with the game would
+content. As I tried to follow the project&amp;#39;s documentation for using &lt;code&gt;wine&lt;/code&gt; with
+the game, I found the experience to be subpar. Using &lt;code&gt;dxvk&lt;/code&gt; with the game would
 lead to crashes whenever a movie asset finished playing. The movie content in
 the game would also not show up correctly. Normal Proton would experience these
 issues with the game and the only working recipe people seemed to have been to
 vendor some ancient version of Proton-GE. My plan is to play this visual novel
 on the Steam Deck, so my goal would be to get the game to play perfectly with at
 least Proton Experimental. With the experience I have gained since high school,
-it is time to see if I can apply it for the challenge.&lt;/p></description></item></channel></rss>
+it is time to see if I can apply it for the challenge.&lt;/p&gt;</description></item></channel></rss>
