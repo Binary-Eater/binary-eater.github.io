@@ -1,5 +1,5 @@
 baseURL = 'https://binary-eater.github.io/'
-languageCode = 'en-us'
+locale = 'en-US'
 title = "Rahul Rameshbabu"
 theme = 'm10c'
 
