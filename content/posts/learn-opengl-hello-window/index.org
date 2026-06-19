@@ -245,10 +245,14 @@ API leaves to the programmer.
 * The result
 
 Putting it all together and running it gives us an 800x600 window cleared to
-teal every frame, closing when we hit escape. It is not much to look at yet, but
-it means GLFW, the OpenGL context, and the ~gl~ function pointers are all wired
-up correctly. That is the whole point of this chapter: a known-good foundation
-to build the actual rendering on top of.
+teal every frame, closing when we hit escape.
+
+#+ATTR_HTML: :width 60%
+[[./hello-window-teal.png]]
+
+It is not much to look at yet, but it means GLFW, the OpenGL context, and the
+~gl~ function pointers are all wired up correctly. That is the whole point of
+this chapter: a known-good foundation to build the actual rendering on top of.
 
 The full state of the project at this chapter lives in
 [[https://github.com/Binary-Eater/learn-opengl.rs/commit/c7c9338fc097fc9b9bd3024a92a489320acd0ee6][this commit]]
