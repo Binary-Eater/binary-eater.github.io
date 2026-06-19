@@ -138,10 +138,9 @@ the end of <code>main</code>.</p><div class="src src-rust"><div class=highlight>
 </span></span><span style=display:flex><span>}</span></span></code></pre></div></div><p>This is a small thing, but it is a nice illustration of how RAII-style ownership
 in Rust removes a category of "did you remember to clean up?" bugs that the C
 API leaves to the programmer.</p></div></div><div id=outline-container-headline-11 class=outline-2><h2 id=headline-11>The result</h2><div id=outline-text-headline-11 class=outline-text-2><p>Putting it all together and running it gives us an 800x600 window cleared to
-teal every frame, closing when we hit escape. It is not much to look at yet, but
-it means GLFW, the OpenGL context, and the <code>gl</code> function pointers are all wired
-up correctly. That is the whole point of this chapter: a known-good foundation
-to build the actual rendering on top of.</p><p>The full state of the project at this chapter lives in
+teal every frame, closing when we hit escape.</p><img src=./hello-window-teal.png alt=./hello-window-teal.png title=./hello-window-teal.png width=60%><p>It is not much to look at yet, but it means GLFW, the OpenGL context, and the
+<code>gl</code> function pointers are all wired up correctly. That is the whole point of
+this chapter: a known-good foundation to build the actual rendering on top of.</p><p>The full state of the project at this chapter lives in
 <a href=https://github.com/Binary-Eater/learn-opengl.rs/commit/c7c9338fc097fc9b9bd3024a92a489320acd0ee6>this commit</a>
 (or browse the
 <a href=https://github.com/Binary-Eater/learn-opengl.rs/tree/c7c9338fc097fc9b9bd3024a92a489320acd0ee6>full tree at that commit</a>).
