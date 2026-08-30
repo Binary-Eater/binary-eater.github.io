@@ -1,4 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graphics on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/graphics/</link><description>Recent content in Graphics on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-US</language><lastBuildDate>Thu, 18 Jun 2026 16:24:03 -0700</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/graphics/index.xml" rel="self" type="application/rss+xml"/><item><title>Learn OpenGL in Rust: Hello Window</title><link>https://binary-eater.github.io/posts/learn-opengl-hello-window/</link><pubDate>Thu, 18 Jun 2026 16:24:03 -0700</pubDate><guid>https://binary-eater.github.io/posts/learn-opengl-hello-window/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2"&gt;
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Graphics on Rahul Rameshbabu</title><link>https://binary-eater.github.io/tags/graphics/</link><description>Recent content in Graphics on Rahul Rameshbabu</description><generator>Hugo</generator><language>en-US</language><lastBuildDate>Sat, 29 Aug 2026 19:19:04 -0700</lastBuildDate><atom:link href="https://binary-eater.github.io/tags/graphics/index.xml" rel="self" type="application/rss+xml"/><item><title>Learn OpenGL in Rust: Hello Triangle</title><link>https://binary-eater.github.io/posts/learn-opengl-hello-triangle/</link><pubDate>Sat, 29 Aug 2026 19:19:04 -0700</pubDate><guid>https://binary-eater.github.io/posts/learn-opengl-hello-triangle/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2"&gt;
+&lt;h2 id="headline-1"&gt;
+Picking up where the window left off
+&lt;/h2&gt;
+&lt;div id="outline-text-headline-1" class="outline-text-2"&gt;
+&lt;p&gt;
+This is the second post in my series working through Joey de Vries&amp;#39;
+&lt;a href="https://learnopengl.com"&gt;Learn OpenGL&lt;/a&gt; book while porting the C++ code to
+Rust as I go. All of the conceptual material, the pipeline explanations, and the
+progression belong to that book; I am just doing the translation and writing
+down what surprised me. This post covers the
+&lt;a href="https://learnopengl.com/Getting-started/Hello-Triangle"&gt;Hello Triangle&lt;/a&gt;
+chapter, which follows the &lt;a href="https://learnopengl.com/Getting-started/Hello-Window"&gt;Hello Window&lt;/a&gt;
+chapter I covered in the &lt;a href="https://binary-eater.github.io/posts/learn-opengl-hello-window/"&gt;previous post&lt;/a&gt;.
+Go read the book chapter first; I am assuming you have its explanations of the
+graphics pipeline and will focus on the Rust side here.&lt;/p&gt;</description></item><item><title>Learn OpenGL in Rust: Hello Window</title><link>https://binary-eater.github.io/posts/learn-opengl-hello-window/</link><pubDate>Thu, 18 Jun 2026 16:24:03 -0700</pubDate><guid>https://binary-eater.github.io/posts/learn-opengl-hello-window/</guid><description>&lt;div id="outline-container-headline-1" class="outline-2"&gt;
 &lt;h2 id="headline-1"&gt;
 Following Learn OpenGL, but in Rust
 &lt;/h2&gt;

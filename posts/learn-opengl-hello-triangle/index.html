@@ -1,0 +1,379 @@
+<!doctype html><html lang=en-US><head><title>Learn OpenGL in Rust: Hello Triangle // Rahul Rameshbabu</title><link rel="shortcut icon" href=/favicon.ico><meta charset=utf-8><meta name=generator content="Hugo 0.159.1"><meta name=viewport content="width=device-width,initial-scale=1"><meta name=author content="Rahul Rameshbabu"><meta name=description content><link rel=stylesheet href=/css/main.min.5b1fcc8902588589c4767187402a3c29f8b8d7a6fdef6d9f8f77045bb0d14fee.css><meta name=twitter:card content="summary"><meta name=twitter:title content="Learn OpenGL in Rust: Hello Triangle"><meta name=twitter:description content="Picking up where the window left off This is the second post in my series working through Joey de Vries' Learn OpenGL book while porting the C++ code to Rust as I go. All of the conceptual material, the pipeline explanations, and the progression belong to that book; I am just doing the translation and writing down what surprised me. This post covers the Hello Triangle chapter, which follows the Hello Window chapter I covered in the previous post. Go read the book chapter first; I am assuming you have its explanations of the graphics pipeline and will focus on the Rust side here."><meta property="og:url" content="https://binary-eater.github.io/posts/learn-opengl-hello-triangle/"><meta property="og:site_name" content="Rahul Rameshbabu"><meta property="og:title" content="Learn OpenGL in Rust: Hello Triangle"><meta property="og:description" content="Picking up where the window left off This is the second post in my series working through Joey de Vries' Learn OpenGL book while porting the C++ code to Rust as I go. All of the conceptual material, the pipeline explanations, and the progression belong to that book; I am just doing the translation and writing down what surprised me. This post covers the Hello Triangle chapter, which follows the Hello Window chapter I covered in the previous post. Go read the book chapter first; I am assuming you have its explanations of the graphics pipeline and will focus on the Rust side here."><meta property="og:locale" content="en_US"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2026-08-29T19:19:04-07:00"><meta property="article:modified_time" content="2026-08-29T19:19:04-07:00"><meta property="article:tag" content="Graphics"><meta property="article:tag" content="Opengl"><meta property="article:tag" content="Rust"></head><body><header class=app-header><a href=/><img class=app-header-avatar src=/avatar.jpg alt="Rahul Rameshbabu"></a>
+<span class=app-header-title>Rahul Rameshbabu</span><nav class=app-header-menu><a class=app-header-menu-item href=/>Home</a>
+-
+<a class=app-header-menu-item href=/tags/>Tags</a>
+-
+<a class=app-header-menu-item href=/about/>About</a></nav><p>Binary-Eater: A developer focused on low-level programming</p><div class=app-header-social><a href=https://github.com/Binary-Eater target=_blank rel="noreferrer noopener me"><svg class="icon icon-github" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>github</title><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg>
+</a><a href=https://matrix.to/#/@binary-eater:matrix.org target=_blank rel="noreferrer noopener me"><svg class="icon icon-message-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>message-circle</title><path d="M21 11.5a8.38 8.38.0 01-.9 3.8A8.5 8.5.0 0112.5 20a8.38 8.38.0 01-3.8-.9L3 21l1.9-5.7A8.38 8.38.0 014 11.5a8.5 8.5.0 014.7-7.6 8.38 8.38.0 013.8-.9h.5a8.48 8.48.0 018 8v.5z"/></svg></a></div></header><main class=app-container><article class=post><header class=post-header><h1 class=post-title>Learn OpenGL in Rust: Hello Triangle</h1><div class=post-meta><div><svg class="icon icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>calendar</title><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+Aug 29, 2026</div><div><svg class="icon icon-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>clock</title><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+15 min read</div><div><svg class="icon icon-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><title>tag</title><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+<a class=tag href=/tags/graphics/>Graphics</a>
+<a class=tag href=/tags/opengl/>Opengl</a>
+<a class=tag href=/tags/rust/>Rust</a></div></div></header><div class=post-content><div id=outline-container-headline-1 class=outline-2><h2 id=headline-1>Picking up where the window left off</h2><div id=outline-text-headline-1 class=outline-text-2><p>This is the second post in my series working through Joey de Vries'
+<a href=https://learnopengl.com>Learn OpenGL</a> book while porting the C++ code to
+Rust as I go. All of the conceptual material, the pipeline explanations, and the
+progression belong to that book; I am just doing the translation and writing
+down what surprised me. This post covers the
+<a href=https://learnopengl.com/Getting-started/Hello-Triangle>Hello Triangle</a>
+chapter, which follows the <a href=https://learnopengl.com/Getting-started/Hello-Window>Hello Window</a>
+chapter I covered in the <a href=/posts/learn-opengl-hello-window/>previous post</a>.
+Go read the book chapter first; I am assuming you have its explanations of the
+graphics pipeline and will focus on the Rust side here.</p><p>The last chapter was mostly plumbing: a GLFW window, a context, and a screen
+cleared to teal. This one is where the actual graphics pipeline shows up, and it
+is where the Rust port stops being a one-to-one transcription. Buffers of raw
+bytes get handed to the driver, shader source gets shipped across the FFI
+boundary as C strings, and OpenGL's error reporting is a set of out-parameters
+and a fixed-size <code>char</code> buffer. Each of those needs a little thought in Rust.</p></div></div><div id=outline-container-headline-2 class=outline-2><h2 id=headline-2>Vertex input and the VBO</h2><div id=outline-text-headline-2 class=outline-text-2><p>The book starts with three vertices in normalized device coordinates. In Rust
+that is a plain array of <code>f32</code>.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#66d9ef>let</span> vertices: [<span style=color:#66d9ef>f32</span>; _] <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/*     x,        y,       z, */</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>    ];</span></span></code></pre></div></div><p>The <code>[f32; _]</code> annotation is a small nicety: I get to say "this is an array of
+<code>f32</code>" and let the compiler infer the length, which keeps me from having to
+update a count every time I add a vertex. The <code>_f32</code> suffixes on the literals
+are the moral equivalent of the <code>f</code> suffix the book uses in C++.</p><p>Next we generate a buffer object and upload the data. This is the first place
+the FFI boundary bites.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> vbo: <span style=color:#66d9ef>u32</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> vao: <span style=color:#66d9ef>u32</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#75715e>// SAFETY: Assume the functions are dynamically loaded via the symbol lookup.
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>unsafe</span> {
+</span></span><span style=display:flex><span>        gl::GenVertexArrays(<span style=color:#ae81ff>1</span>, <span style=color:#f92672>&amp;</span><span style=color:#66d9ef>mut</span> vao);
+</span></span><span style=display:flex><span>        gl::GenBuffers(<span style=color:#ae81ff>1</span>, <span style=color:#f92672>&amp;</span><span style=color:#66d9ef>mut</span> vbo);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        gl::BindVertexArray(vao);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        gl::BindBuffer(gl::<span style=color:#66d9ef>ARRAY_BUFFER</span>, vbo);
+</span></span><span style=display:flex><span>        gl::BufferData(
+</span></span><span style=display:flex><span>            gl::<span style=color:#66d9ef>ARRAY_BUFFER</span>,
+</span></span><span style=display:flex><span>            std::mem::size_of_val(<span style=color:#f92672>&amp;</span>vertices)
+</span></span><span style=display:flex><span>                .try_into()
+</span></span><span style=display:flex><span>                .expect(<span style=color:#e6db74>&#34;failed to represent usize value as an i32&#34;</span>),
+</span></span><span style=display:flex><span>            <span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             * TODO: Might be interesting to debug incorrect size in RenderDoc.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             *
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             * vertices
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             *     .len()
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             *     .try_into()
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             *     .expect(&#34;failed to represent usize value as an i32&#34;),
+</span></span></span><span style=display:flex><span><span style=color:#75715e>            */</span>
+</span></span><span style=display:flex><span>            vertices.as_ptr().cast(), <span style=color:#75715e>/* cast *const f32 into *const c_void */</span>
+</span></span><span style=display:flex><span>            gl::<span style=color:#66d9ef>STATIC_DRAW</span>,
+</span></span><span style=display:flex><span>        );</span></span></code></pre></div></div><p>Three things going on here that the C++ version does not have to say out loud.</p><p>The size argument is <code>std::mem::size_of_val(&amp;vertices)</code>, not <code>vertices.len()</code>.
+In C++, <code>sizeof(vertices)</code> on a stack array gives you the byte count and there
+is nothing to get wrong. In Rust, <code>.len()</code> on an array is the <strong>element</strong> count,
+so reaching for the obvious method would hand OpenGL 9 where it wants 36. I left
+the wrong version in as a comment because I think it would be genuinely
+instructive to watch what
+<a href=https://renderdoc.org/>RenderDoc</a> shows when the driver is told the buffer
+is a quarter of its real size.</p><p><code>size_of_val</code> returns a <code>usize</code>, but <code>glBufferData</code> wants a signed
+<code>GLsizeiptr</code>, so every size has to go through <code>.try_into().expect(...)</code>. C does
+this conversion silently. Rust makes you acknowledge that a <code>usize</code> might not
+fit, which is noisy for a 36 byte buffer but is the same discipline that catches
+real truncation bugs elsewhere.</p><p>Finally, <code>vertices.as_ptr().cast()</code> turns a <code>*const f32</code> into the <code>*const
+c_void</code> the C API expects. <code>.cast()</code> is the tidier spelling of an <code>as</code> pointer
+cast, and it keeps the constness for you.</p></div></div><div id=outline-container-headline-3 class=outline-2><h2 id=headline-3>Linking vertex attributes and the VAO</h2><div id=outline-text-headline-3 class=outline-text-2><p>Telling OpenGL how to interpret those bytes is <code>glVertexAttribPointer</code>. The
+translation is mechanical, but the last two arguments are worth pointing at.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>        gl::VertexAttribPointer(
+</span></span><span style=display:flex><span>            <span style=color:#ae81ff>0</span>,
+</span></span><span style=display:flex><span>            <span style=color:#ae81ff>3</span>,
+</span></span><span style=display:flex><span>            gl::<span style=color:#66d9ef>FLOAT</span>,
+</span></span><span style=display:flex><span>            gl::<span style=color:#66d9ef>FALSE</span>,
+</span></span><span style=display:flex><span>            (<span style=color:#ae81ff>3</span> <span style=color:#f92672>*</span> size_of::<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>f32</span><span style=color:#f92672>&gt;</span>())
+</span></span><span style=display:flex><span>                .try_into()
+</span></span><span style=display:flex><span>                .expect(<span style=color:#e6db74>&#34;failed to represent usize value as an i32&#34;</span>),
+</span></span><span style=display:flex><span>            ptr::null(),
+</span></span><span style=display:flex><span>        );
+</span></span><span style=display:flex><span>        gl::EnableVertexAttribArray(<span style=color:#ae81ff>0</span>);
+</span></span><span style=display:flex><span>    }</span></span></code></pre></div></div><p><code>gl::FALSE</code> is not a Rust <code>bool</code>; it is OpenGL's <code>GLboolean</code>, a <code>u8</code>. And the
+offset argument, which the book writes as the eyebrow-raising <code>(void*)0</code>, is
+just <code>ptr::null()</code> in Rust. That is one case where the Rust version reads
+<strong>better</strong> than the original: a null pointer is spelled like a null pointer
+instead of a cast integer.</p><p>The stride is <code>3 * size_of::&lt;f32>()</code>, mirroring the book's <code>3 * sizeof(float)</code>,
+and it goes through the same <code>try_into</code> dance as before.</p><p>Everything from <code>gl::BindVertexArray(vao)</code> onward is being recorded into the
+VAO, which is the whole point of the object: the attribute layout and the
+element buffer binding are state we would otherwise have to set up again on
+every draw call.</p></div></div><div id=outline-container-headline-4 class=outline-2><h2 id=headline-4>Shaders as assets, not string literals</h2><div id=outline-text-headline-4 class=outline-text-2><p>The book embeds GLSL in the C++ source as a raw string literal. I put mine in
+<code>assets/shader.vert</code> and <code>assets/shader.frag</code> instead, mostly so my editor
+treats them as GLSL.</p><div class="src src-glsl"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-glsl data-lang=glsl><span style=display:flex><span><span style=color:#75715e>#version 330 core</span>
+</span></span><span style=display:flex><span>layout (location <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>) <span style=color:#66d9ef>in</span> <span style=color:#66d9ef>vec3</span> aPos;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>void</span> main()
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    gl_Position <span style=color:#f92672>=</span> <span style=color:#66d9ef>vec4</span>(aPos.x, aPos.y, aPos.z, <span style=color:#ae81ff>1.0</span>);
+</span></span><span style=display:flex><span>}</span></span></code></pre></div></div><div class="src src-glsl"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-glsl data-lang=glsl><span style=display:flex><span><span style=color:#75715e>#version 330 core</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>out</span> <span style=color:#66d9ef>vec4</span> FragColor;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>void</span> main()
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    FragColor <span style=color:#f92672>=</span> <span style=color:#66d9ef>vec4</span>(<span style=color:#ae81ff>1.0</span>f, <span style=color:#ae81ff>0.5</span>f, <span style=color:#ae81ff>0.2</span>f, <span style=color:#ae81ff>1.0</span>f);
+</span></span><span style=display:flex><span>}</span></span></code></pre></div></div><p>Rust lets me keep them as separate files without paying for runtime file I/O.
+<code>include_str!</code> pulls the contents into the binary at compile time, and
+<code>CString::new</code> gives me the NUL-terminated buffer OpenGL wants.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#66d9ef>let</span> vertex_shader_source <span style=color:#f92672>=</span> CString::new(<span style=color:#a6e22e>include_str!</span>(<span style=color:#e6db74>&#34;../assets/shader.vert&#34;</span>))
+</span></span><span style=display:flex><span>        .expect(<span style=color:#e6db74>&#34;string slice contains an illegal null byte internally&#34;</span>);</span></span></code></pre></div></div><p><code>CString::new</code> can fail if the string already contains an interior NUL byte,
+which is not a thing that happens in GLSL source, hence the <code>expect</code>. The value
+of this shape is that the shader is still a real file on disk for tooling
+purposes, but there is no chance of shipping a binary that cannot find its
+shaders at runtime.</p></div></div><div id=outline-container-headline-5 class=outline-2><h2 id=headline-5>Compiling a shader, and the error-log dance</h2><div id=outline-text-headline-5 class=outline-text-2><p>Compiling is the usual create/source/compile sequence.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#75715e>// SAFETY: Assume the functions are dynamically loaded via the symbol lookup.
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>unsafe</span> {
+</span></span><span style=display:flex><span>        vertex_shader <span style=color:#f92672>=</span> gl::CreateShader(gl::<span style=color:#66d9ef>VERTEX_SHADER</span>);
+</span></span><span style=display:flex><span>        gl::ShaderSource(
+</span></span><span style=display:flex><span>            vertex_shader,
+</span></span><span style=display:flex><span>            <span style=color:#ae81ff>1</span>,
+</span></span><span style=display:flex><span>            <span style=color:#f92672>&amp;</span>vertex_shader_source.as_ptr(),
+</span></span><span style=display:flex><span>            ptr::null(),
+</span></span><span style=display:flex><span>        );
+</span></span><span style=display:flex><span>        gl::CompileShader(vertex_shader);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        gl::GetShaderiv(
+</span></span><span style=display:flex><span>            vertex_shader,
+</span></span><span style=display:flex><span>            gl::<span style=color:#66d9ef>COMPILE_STATUS</span>,
+</span></span><span style=display:flex><span>            ptr::from_mut(<span style=color:#f92672>&amp;</span><span style=color:#66d9ef>mut</span> success),
+</span></span><span style=display:flex><span>        );
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>if</span> success <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>            gl::GetShaderInfoLog(
+</span></span><span style=display:flex><span>                vertex_shader,
+</span></span><span style=display:flex><span>                info_log_isize,
+</span></span><span style=display:flex><span>                ptr::null_mut(),
+</span></span><span style=display:flex><span>                info_log.as_mut_ptr(),
+</span></span><span style=display:flex><span>            );
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }</span></span></code></pre></div></div><p><code>glShaderSource</code> takes an <strong>array</strong> of string pointers, so <code>&amp;source.as_ptr()</code> is
+doing double duty: <code>as_ptr()</code> gives the <code>*const c_char</code>, and the <code>&</code> makes it a
+one-element array of those. <code>ptr::from_mut(&amp;mut success)</code> is the explicit way to
+produce the out-parameter pointer for the status <code>i32</code>.</p><p>The interesting part is what happens with the log buffer.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> success: <span style=color:#66d9ef>i32</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> info_log: [<span style=color:#66d9ef>i8</span>; <span style=color:#ae81ff>512</span>] <span style=color:#f92672>=</span> [<span style=color:#ae81ff>0</span>; <span style=color:#ae81ff>512</span>];
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> info_log_isize: <span style=color:#66d9ef>i32</span> <span style=color:#f92672>=</span>
+</span></span><span style=display:flex><span>        info_log.len().try_into().expect(<span style=color:#e6db74>&#34;failed to represent usize value as an i32&#34;</span>);</span></span></code></pre></div></div><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#66d9ef>if</span> success <span style=color:#f92672>==</span> <span style=color:#ae81ff>0</span> {
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// SAFETY: The i8 values in info_log can safely be represented as u8
+</span></span></span><span style=display:flex><span>        <span style=color:#75715e>// since the byte values represent characters.
+</span></span></span><span style=display:flex><span>        <span style=color:#66d9ef>let</span> char_slice: <span style=color:#66d9ef>&amp;</span>[<span style=color:#66d9ef>u8</span>; <span style=color:#ae81ff>512</span>] <span style=color:#f92672>=</span> <span style=color:#66d9ef>unsafe</span> { std::mem::transmute(<span style=color:#f92672>&amp;</span>info_log) };
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>let</span> error_string <span style=color:#f92672>=</span> <span style=color:#a6e22e>format!</span>(
+</span></span><span style=display:flex><span>            <span style=color:#e6db74>&#34;ERROR::SHADER::VERTEX::COMPILATION_FAILED: </span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#34;</span>,
+</span></span><span style=display:flex><span>            <span style=color:#66d9ef>match</span> std::<span style=color:#66d9ef>str</span>::from_utf8(char_slice) {
+</span></span><span style=display:flex><span>                Ok(s) <span style=color:#f92672>=&gt;</span> String::from(s),
+</span></span><span style=display:flex><span>                Err(e) <span style=color:#f92672>=&gt;</span> <span style=color:#a6e22e>format!</span>(<span style=color:#e6db74>&#34;Invalid UTF-8 found in error message: </span><span style=color:#e6db74>{}</span><span style=color:#e6db74>&#34;</span>, e),
+</span></span><span style=display:flex><span>            },
+</span></span><span style=display:flex><span>        ).trim_end_matches(<span style=color:#e6db74>&#34;</span><span style=color:#ae81ff>\0</span><span style=color:#e6db74>&#34;</span>).trim_end().to_string();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#66d9ef>return</span> Err(error_string);
+</span></span><span style=display:flex><span>    }</span></span></code></pre></div></div><p>In C++ this is a <code>char infoLog[512]</code> that gets handed straight to <code>std::cout</code>.
+In Rust the buffer is <code>[i8; 512]</code> because that is what <code>GLchar</code> maps to on this
+platform, so getting a <code>&amp;str</code> out of it takes three steps: reinterpret the <code>i8</code>
+bytes as <code>u8</code>, validate that they are UTF-8, and then strip the trailing NUL
+padding that the driver left in the unused tail of the buffer. The <code>transmute</code>
+is the one genuinely gross bit, though it is a safe reinterpretation here since
+<code>i8</code> and <code>u8</code> have the same layout and we only ever read the bytes as
+characters. The <code>from_utf8</code> check is not just ceremony either; it means a driver
+that hands back garbage produces a diagnostic instead of undefined behavior.</p><p>Notice that the error path <code>return Err(...)</code> rather than printing. I changed
+<code>main</code>'s signature for this chapter.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span><span style=color:#66d9ef>fn</span> <span style=color:#a6e22e>main</span>() -&gt; Result<span style=color:#f92672>&lt;</span>(), String<span style=color:#f92672>&gt;</span> {</span></span></code></pre></div></div><p>A failed shader compile is not a panic-worthy bug in my program, it is a message
+from a compiler that lives in the graphics driver. Returning it as an <code>Err</code> gets
+it printed to stderr with a nonzero exit status for free, and it composes if I
+later factor the shader loading into its own function.</p><p>The fragment shader repeats the same three blocks with <code>gl::FRAGMENT_SHADER</code> and
+a different error prefix. There is an obvious refactor waiting here (a
+<code>compile_shader(kind, source) -> Result&lt;u32, String></code> helper), but the book
+writes it out longhand and I wanted the first pass to stay close to the source
+material.</p></div></div><div id=outline-container-headline-6 class=outline-2><h2 id=headline-6>Linking the shader program</h2><div id=outline-text-headline-6 class=outline-text-2><p>Linking follows the same create/attach/link/check pattern.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#75715e>// SAFETY: Assume the functions are dynamically loaded via the symbol lookup.
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>unsafe</span> {
+</span></span><span style=display:flex><span>        shader_program <span style=color:#f92672>=</span> gl::CreateProgram();
+</span></span><span style=display:flex><span>        gl::AttachShader(shader_program, vertex_shader);
+</span></span><span style=display:flex><span>        gl::AttachShader(shader_program, fragment_shader);
+</span></span><span style=display:flex><span>        gl::LinkProgram(shader_program);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        gl::DeleteShader(vertex_shader);
+</span></span><span style=display:flex><span>        gl::DeleteShader(fragment_shader);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        gl::GetProgramiv(
+</span></span><span style=display:flex><span>            shader_program,
+</span></span><span style=display:flex><span>            gl::<span style=color:#66d9ef>LINK_STATUS</span>,
+</span></span><span style=display:flex><span>            ptr::from_mut(<span style=color:#f92672>&amp;</span><span style=color:#66d9ef>mut</span> success),
+</span></span><span style=display:flex><span>        );</span></span></code></pre></div></div><p>The shader objects get deleted immediately after linking, exactly as the book
+does: the program has what it needs, and the shaders are just intermediates at
+that point. Note that the status query is <code>GetProgramiv</code> / <code>GetProgramInfoLog</code>
+here rather than the <code>GetShader*</code> variants; they are different entry points for
+what looks like the same operation, and mixing them up is a classic way to get a
+silently empty log.</p></div></div><div id=outline-container-headline-7 class=outline-2><h2 id=headline-7>Drawing</h2><div id=outline-text-headline-7 class=outline-text-2><p>The render loop from the last chapter grows three lines.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>        <span style=color:#75715e>// SAFETY: Assume the functions are dynamically loaded via the symbol lookup.
+</span></span></span><span style=display:flex><span>        <span style=color:#66d9ef>unsafe</span> {
+</span></span><span style=display:flex><span>            gl::ClearColor(<span style=color:#ae81ff>0.2_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.3_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.3_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>1.0_</span><span style=color:#66d9ef>f32</span>);
+</span></span><span style=display:flex><span>            gl::Clear(gl::<span style=color:#66d9ef>COLOR_BUFFER_BIT</span>);
+</span></span><span style=display:flex><span>            gl::UseProgram(shader_program);
+</span></span><span style=display:flex><span>            gl::BindVertexArray(vao);
+</span></span><span style=display:flex><span>            gl::DrawArrays(gl::<span style=color:#66d9ef>TRIANGLES</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>3</span>);
+</span></span><span style=display:flex><span>        }</span></span></code></pre></div></div><p>Select the program, bind the VAO that describes the vertex layout, and draw
+three vertices as triangles. Nothing Rust-specific to say about this one, which
+is a good sign.</p></div></div><div id=outline-container-headline-8 class=outline-2><h2 id=headline-8>The objects Drop cannot clean up</h2><div id=outline-text-headline-8 class=outline-text-2><p>The pleasant surprise of the last chapter was that <code>glfwTerminate</code> was
+unnecessary because the <code>Glfw</code> value implements <code>Drop</code>. That does <strong>not</strong> extend
+to OpenGL objects, and it is worth being clear about why.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#75715e>// SAFETY: Assume the functions are dynamically loaded via the symbol lookup.
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>unsafe</span> {
+</span></span><span style=display:flex><span>        gl::DeleteVertexArrays(<span style=color:#ae81ff>1</span>, <span style=color:#f92672>&amp;</span>vao);
+</span></span><span style=display:flex><span>        gl::DeleteBuffers(<span style=color:#ae81ff>1</span>, <span style=color:#f92672>&amp;</span>vbo);
+</span></span><span style=display:flex><span>        gl::DeleteProgram(shader_program);
+</span></span><span style=display:flex><span>    }</span></span></code></pre></div></div><p>A VAO, a VBO, and a shader program are all just <code>u32</code> handles on the Rust side.
+The actual resources live in driver memory, and a bare <code>u32</code> has no destructor
+and no idea it means anything. Rust's ownership model buys us nothing here for
+free; the cleanup is as manual as it is in C++. The natural fix is to wrap each
+handle in a newtype whose <code>Drop</code> calls the matching <code>gl::Delete*</code>, which would
+recover the RAII behavior. I have deliberately not done that yet, because the
+book keeps the raw handles for several more chapters and I want the diffs
+against the original to stay legible. It is on the list.</p></div></div><div id=outline-container-headline-9 class=outline-2><h2 id=headline-9>The result</h2><div id=outline-text-headline-9 class=outline-text-2><p>Putting all of that together gives us the triangle the chapter is named for.</p><img src=./hello-triangle-git-68057c349440.png alt=./hello-triangle-git-68057c349440.png title=./hello-triangle-git-68057c349440.png width=60%><p>That is the orange from the fragment shader, on the teal we set up last time.
+The state of the project at this point is
+<a href=https://github.com/Binary-Eater/learn-opengl.rs/commit/68057c3494408aa6ed948e95de59b192ef206600>this commit</a>
+(or browse the
+<a href=https://github.com/Binary-Eater/learn-opengl.rs/tree/68057c3494408aa6ed948e95de59b192ef206600>full tree at that commit</a>).
+To run it yourself:</p><div class="src src-shell"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-shell data-lang=shell><span style=display:flex><span>git clone https://github.com/Binary-Eater/learn-opengl.rs.git
+</span></span><span style=display:flex><span>cd learn-opengl.rs
+</span></span><span style=display:flex><span>git checkout 68057c3494408aa6ed948e95de59b192ef206600
+</span></span><span style=display:flex><span>cargo run</span></span></code></pre></div></div><p>Every stage below is a separate commit in the same repository, so you can swap
+the hash in that <code>git checkout</code> to reproduce any of the pictures that follow.</p></div></div><div id=outline-container-headline-10 class=outline-2><h2 id=headline-10>Element buffer objects and the rectangle</h2><div id=outline-text-headline-10 class=outline-text-2><p>The last section of the chapter draws a rectangle out of two triangles, and uses
+it to motivate element buffer objects. Drawing a rectangle from two independent
+triangles means six vertices, two of which are exact duplicates. An EBO lets us
+store four unique vertices plus a list of indices into them.</p><p>I kept the wasteful version around as a comment for contrast.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * A world without element buffer objects for drawing a rectangle.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * let vertices: [f32; _] = [
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *     /*     x,        y,       z, */
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *     // first triangle
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *      0.5_f32,  0.5_f32, 0.0_f32,  // top right
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *      0.5_f32, -0.5_f32, 0.0_f32,  // bottom right
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *     -0.5_f32,  0.5_f32, 0.0_f32,  // top left
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *     // second triangle
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *      0.5_f32, -0.5_f32, 0.0_f32,  // bottom right
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *     -0.5_f32, -0.5_f32, 0.0_f32,  // bottom left
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     *     -0.5_f32,  0.5_f32, 0.0_f32,  // top left
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     * ];
+</span></span></span><span style=display:flex><span><span style=color:#75715e>     */</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> vertices: [<span style=color:#66d9ef>f32</span>; _] <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/*     x,        y,       z, */</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// first triangle
+</span></span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#75715e>// top right
+</span></span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#75715e>// bottom right
+</span></span></span><span style=display:flex><span>        <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#75715e>// bottom left
+</span></span></span><span style=display:flex><span>        <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#75715e>// top left
+</span></span></span><span style=display:flex><span>    ];
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> indices: [<span style=color:#66d9ef>u32</span>; _] <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/* NOTE: indices start from 0 and end at 3 */</span>
+</span></span><span style=display:flex><span>        <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>3</span>,   <span style=color:#75715e>// first triangle
+</span></span></span><span style=display:flex><span>        <span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>,   <span style=color:#75715e>// second triangle
+</span></span></span><span style=display:flex><span>    ];</span></span></code></pre></div></div><p>The index buffer is uploaded the same way the vertex buffer was, just with
+<code>gl::ELEMENT_ARRAY_BUFFER</code> as the target.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>        gl::BindBuffer(gl::<span style=color:#66d9ef>ELEMENT_ARRAY_BUFFER</span>, ebo);
+</span></span><span style=display:flex><span>        gl::BufferData(
+</span></span><span style=display:flex><span>            gl::<span style=color:#66d9ef>ELEMENT_ARRAY_BUFFER</span>,
+</span></span><span style=display:flex><span>            std::mem::size_of_val(<span style=color:#f92672>&amp;</span>indices)
+</span></span><span style=display:flex><span>                .try_into()
+</span></span><span style=display:flex><span>                .expect(<span style=color:#e6db74>&#34;failed to represent usize value as an i32&#34;</span>),
+</span></span><span style=display:flex><span>            indices.as_ptr().cast(), <span style=color:#75715e>/* cast *const f32 into *const c_void */</span>
+</span></span><span style=display:flex><span>            gl::<span style=color:#66d9ef>STATIC_DRAW</span>,
+</span></span><span style=display:flex><span>        );</span></span></code></pre></div></div><p>And the draw call becomes <code>glDrawElements</code>.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>            gl::UseProgram(shader_program);
+</span></span><span style=display:flex><span>            gl::BindVertexArray(vao);
+</span></span><span style=display:flex><span>            <span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             * Can use polygon mode to help with debugging using wireframes
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             *
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             * wireframe mode: gl::PolygonMode(gl::FRONT_AND_BACK, gl::LINE);
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             * default:        gl::PolygonMode(gl::FRONT_AND_BACK, gl::FILL);
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             */</span>
+</span></span><span style=display:flex><span>            <span style=color:#75715e>/*
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             * ebo is bounded to vao since the vao tracks the last EBO object
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             * bound while vao is bound.
+</span></span></span><span style=display:flex><span><span style=color:#75715e>             */</span>
+</span></span><span style=display:flex><span>            gl::DrawElements(gl::<span style=color:#66d9ef>TRIANGLES</span>, <span style=color:#ae81ff>6</span>, gl::<span style=color:#66d9ef>UNSIGNED_INT</span>, ptr::null());
+</span></span><span style=display:flex><span>            gl::BindVertexArray(<span style=color:#ae81ff>0</span>);</span></span></code></pre></div></div><p>The comment about the EBO being captured by the VAO is the piece of state
+tracking I most wanted written down. We never bind the EBO in the render loop,
+yet <code>DrawElements</code> finds it, because the VAO remembered the last
+<code>ELEMENT_ARRAY_BUFFER</code> binding made while that VAO was bound. This is also why
+the book warns you not to unbind the EBO while the VAO is still bound. Note the
+final argument is <code>ptr::null()</code> again, standing in for the book's <code>0</code> offset
+into the bound index buffer.</p><p>The result is a rectangle, from four vertices and six indices.</p><img src=./hello-triangle-git-5d75001d8ea9.png alt=./hello-triangle-git-5d75001d8ea9.png title=./hello-triangle-git-5d75001d8ea9.png width=60%><div class="src src-shell"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-shell data-lang=shell><span style=display:flex><span>git checkout 5d75001d8ea9da2a43af16460bd84ef8a3baae22
+</span></span><span style=display:flex><span>cargo run</span></span></code></pre></div></div><p>One bookkeeping note if you go browsing the history: I reverted this commit
+right afterwards. The exercises all build on the plain single-triangle program
+rather than on the rectangle, so reverting back to the <code>68057c3</code> state kept each
+exercise a small, readable diff instead of a rewrite. The rectangle commit is
+still in the history and still checks out and runs; it is just not an ancestor
+of the exercise commits.</p></div></div><div id=outline-container-headline-11 class=outline-2><h2 id=headline-11>Exercise 1: two triangles from one buffer</h2><div id=outline-text-headline-11 class=outline-text-2><blockquote><p>Try to draw 2 triangles next to each other using <code>glDrawArrays</code> by adding more
+vertices to your data.</p></blockquote><p>This one is nearly free, which is the point of the exercise: more vertices in
+the same buffer, and a larger count in the draw call.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#66d9ef>let</span> vertices: [<span style=color:#66d9ef>f32</span>; _] <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/*     x,        y,       z, */</span>
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// left triangle
+</span></span></span><span style=display:flex><span>        <span style=color:#f92672>-</span><span style=color:#ae81ff>1.0_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>        <span style=color:#75715e>// right triangle
+</span></span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>1.0_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>    ];</span></span></code></pre></div></div><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>            gl::DrawArrays(gl::<span style=color:#66d9ef>TRIANGLES</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>6</span>);</span></span></code></pre></div></div><p>The <code>[f32; _]</code> inference earns its keep here; adding three vertices required no
+other edit to the declaration. The only real change is the vertex count going
+from 3 to 6, and <code>size_of_val</code> picks up the new buffer size on its own.</p><img src=./hello-triangle-git-dc2e1e547e3d.png alt=./hello-triangle-git-dc2e1e547e3d.png title=./hello-triangle-git-dc2e1e547e3d.png width=60%><div class="src src-shell"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-shell data-lang=shell><span style=display:flex><span>git checkout dc2e1e547e3d10b4deba4b7b4d98938956048467
+</span></span><span style=display:flex><span>cargo run</span></span></code></pre></div></div></div></div><div id=outline-container-headline-12 class=outline-2><h2 id=headline-12>Exercise 2: two triangles from two VAOs</h2><div id=outline-text-headline-12 class=outline-text-2><blockquote><p>Now create the same 2 triangles using two different VAOs and VBOs for their
+data.</p></blockquote><p>Same picture, different plumbing. The single <code>vertices</code> array splits in two, and
+so does every object that referenced it.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#66d9ef>let</span> left_triangle_vertices: [<span style=color:#66d9ef>f32</span>; _] <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/*     x,        y,       z, */</span>
+</span></span><span style=display:flex><span>        <span style=color:#f92672>-</span><span style=color:#ae81ff>1.0_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>        <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>    ];
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> right_triangle_vertices: [<span style=color:#66d9ef>f32</span>; _] <span style=color:#f92672>=</span> [
+</span></span><span style=display:flex><span>        <span style=color:#75715e>/*     x,        y,       z, */</span>
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>,  <span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>         <span style=color:#ae81ff>1.0_</span><span style=color:#66d9ef>f32</span>, <span style=color:#f92672>-</span><span style=color:#ae81ff>0.5_</span><span style=color:#66d9ef>f32</span>, <span style=color:#ae81ff>0.0_</span><span style=color:#66d9ef>f32</span>,
+</span></span><span style=display:flex><span>    ];
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e>/* NOTE: could use an array of VBOs and VAOs for a single Gen* call */</span>
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> left_triangle_vbo: <span style=color:#66d9ef>u32</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> left_triangle_vao: <span style=color:#66d9ef>u32</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> right_triangle_vbo: <span style=color:#66d9ef>u32</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;
+</span></span><span style=display:flex><span>    <span style=color:#66d9ef>let</span> <span style=color:#66d9ef>mut</span> right_triangle_vao: <span style=color:#66d9ef>u32</span> <span style=color:#f92672>=</span> <span style=color:#ae81ff>0</span>;</span></span></code></pre></div></div><p>The setup block then runs the bind/upload/attrib sequence twice, once per VAO,
+and the render loop draws each in turn.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>            gl::UseProgram(shader_program);
+</span></span><span style=display:flex><span>            gl::BindVertexArray(left_triangle_vao);
+</span></span><span style=display:flex><span>            gl::DrawArrays(gl::<span style=color:#66d9ef>TRIANGLES</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>3</span>);
+</span></span><span style=display:flex><span>            gl::BindVertexArray(right_triangle_vao);
+</span></span><span style=display:flex><span>            gl::DrawArrays(gl::<span style=color:#66d9ef>TRIANGLES</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>3</span>);</span></span></code></pre></div></div><p>Binding a different VAO swaps out the entire attribute configuration, which is
+exactly the payoff the book advertises for VAOs. The <code>Gen*</code> calls all take a
+count and an out-pointer, so as the note in the code says, two <code>u32</code> variables
+could just as well be a <code>[u32; 2]</code> with a single <code>gl::GenVertexArrays(2,
+arr.as_mut_ptr())</code>. I kept them as named variables because
+<code>left_triangle_vao</code> reads better than <code>vaos[0]</code>, and there are only two.</p><p>The rendered output is pixel-identical to exercise 1, which is the correct
+answer.</p><img src=./hello-triangle-git-72fbec45e73b.png alt=./hello-triangle-git-72fbec45e73b.png title=./hello-triangle-git-72fbec45e73b.png width=60%><div class="src src-shell"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-shell data-lang=shell><span style=display:flex><span>git checkout 72fbec45e73b288a136f4b1388d9d2c4d9ee24a2
+</span></span><span style=display:flex><span>cargo run</span></span></code></pre></div></div></div></div><div id=outline-container-headline-13 class=outline-2><h2 id=headline-13>Exercise 3: two shader programs</h2><div id=outline-text-headline-13 class=outline-text-2><blockquote><p>Create two shader programs where the second program uses a different fragment
+shader that outputs the color yellow; draw both triangles again where one
+outputs the color yellow.</p></blockquote><p>A second fragment shader in <code>assets/yellow_shader.frag</code>:</p><div class="src src-glsl"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-glsl data-lang=glsl><span style=display:flex><span><span style=color:#75715e>#version 330 core</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>out</span> <span style=color:#66d9ef>vec4</span> FragColor;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>void</span> main()
+</span></span><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    FragColor <span style=color:#f92672>=</span> <span style=color:#66d9ef>vec4</span>(<span style=color:#ae81ff>1.0</span>f, <span style=color:#ae81ff>1.0</span>f, <span style=color:#ae81ff>0.0</span>f, <span style=color:#ae81ff>1.0</span>f);
+</span></span><span style=display:flex><span>}</span></span></code></pre></div></div><p>It gets compiled with the same block as the first fragment shader, then linked
+into its own program that reuses the <strong>same</strong> vertex shader object.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>    <span style=color:#75715e>// SAFETY: Assume the functions are dynamically loaded via the symbol lookup.
+</span></span></span><span style=display:flex><span>    <span style=color:#66d9ef>unsafe</span> {
+</span></span><span style=display:flex><span>        yellow_shader_program <span style=color:#f92672>=</span> gl::CreateProgram();
+</span></span><span style=display:flex><span>        gl::AttachShader(yellow_shader_program, vertex_shader);
+</span></span><span style=display:flex><span>        gl::AttachShader(yellow_shader_program, yellow_fragment_shader);
+</span></span><span style=display:flex><span>        gl::LinkProgram(yellow_shader_program);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        gl::DeleteShader(vertex_shader);
+</span></span><span style=display:flex><span>        gl::DeleteShader(yellow_fragment_shader);</span></span></code></pre></div></div><p>That shared vertex shader forced the one non-obvious change in this exercise.
+The first program's link block used to delete both of its shaders right after
+linking; now the <code>gl::DeleteShader(vertex_shader)</code> has to move down to <strong>after</strong>
+the second program links, because deleting it too early would pull it out from
+under the program still waiting to be built. The error paths shift accordingly,
+so a failure partway through cleans up whichever shader objects are still
+outstanding. This is manual lifetime management with no compiler helping, which
+is a nice concrete example of what those <code>Drop</code> wrappers I keep postponing would
+actually buy.</p><p>Drawing is then a matter of switching programs between the two draw calls.</p><div class="src src-rust"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-rust data-lang=rust><span style=display:flex><span>            gl::UseProgram(shader_program);
+</span></span><span style=display:flex><span>            gl::BindVertexArray(left_triangle_vao);
+</span></span><span style=display:flex><span>            gl::DrawArrays(gl::<span style=color:#66d9ef>TRIANGLES</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>3</span>);
+</span></span><span style=display:flex><span>            gl::UseProgram(yellow_shader_program);
+</span></span><span style=display:flex><span>            gl::BindVertexArray(right_triangle_vao);
+</span></span><span style=display:flex><span>            gl::DrawArrays(gl::<span style=color:#66d9ef>TRIANGLES</span>, <span style=color:#ae81ff>0</span>, <span style=color:#ae81ff>3</span>);</span></span></code></pre></div></div><img src=./hello-triangle-git-c34d22c7ba1e.png alt=./hello-triangle-git-c34d22c7ba1e.png title=./hello-triangle-git-c34d22c7ba1e.png width=60%><div class="src src-shell"><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-shell data-lang=shell><span style=display:flex><span>git checkout c34d22c7ba1eb5ef636f76647a66570ab0d517ab
+</span></span><span style=display:flex><span>cargo run</span></span></code></pre></div></div></div></div><div id=outline-container-headline-14 class=outline-2><h2 id=headline-14>What's next</h2><div id=outline-text-headline-14 class=outline-text-2><p>The thing this chapter makes obvious is how much of <code>main</code> is now shader
+boilerplate: three near-identical compile-and-check blocks and two
+link-and-check blocks, all of them managing raw handles by hand. Conveniently,
+the next chapter is <a href=https://learnopengl.com/Getting-started/Shaders>Shaders</a>,
+where the book builds a shader class to hide exactly that. That should be the
+first place the Rust port really diverges in structure rather than just in
+syntax, since a <code>Shader</code> type with a <code>Drop</code> impl and a <code>Result</code> returning
+constructor is a much better fit than a C++ class with a <code>cout</code> in its
+constructor. I will cover it in the next post.</p><p>As always, all the conceptual credit here belongs to Joey de Vries and the
+<a href=https://learnopengl.com>Learn OpenGL</a> book, specifically the
+<a href=https://learnopengl.com/Getting-started/Hello-Triangle>Hello Triangle</a>
+chapter. Go support it.</p></div></div></div><div class=post-footer></div></article></main></body></html>
